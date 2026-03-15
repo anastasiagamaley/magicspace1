@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Space | Dula · Joga · Sound Healing | Martin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#7a6660;--white:#fdfaf8;--gold:#b89a7a; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Jost',sans-serif;background:var(--white);color:var(--text);font-weight:300;overflow-x:hidden; }
+    nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 3rem;background:rgba(253,250,248,0.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(184,154,122,0.12);transition:padding 0.3s; }
+    nav.scrolled { padding:0.85rem 3rem; }
+    .nav-logo { font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;letter-spacing:0.08em;color:var(--text);text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex;gap:1.8rem;list-style:none;align-items:center; }
+    .nav-links a { text-decoration:none;color:var(--text-light);font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s; }
+    .nav-links a:hover { color:var(--gold); }
+    .dropdown { position:relative; }
+    .dropdown > a::after { content:' ▾';font-size:0.6rem; }
+    .dropdown-menu { position:absolute;top:calc(100% + 10px);left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
+    .dropdown:hover .dropdown-menu { opacity:1;pointer-events:all;transform:translateY(0); }
+    .dropdown-menu a { display:block;padding:0.6rem 1.3rem;font-size:0.77rem;color:var(--text-light);white-space:nowrap;transition:all 0.15s; }
+    .dropdown-menu a:hover { color:var(--gold);background:var(--rose); }
+    .nav-cta { background:var(--gold);color:var(--white);padding:0.58rem 1.35rem;border-radius:50px;text-decoration:none;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s; }
+    .nav-cta:hover { background:#a0876a;transform:translateY(-1px); }
+    .hamburger { display:none;background:none;border:none;cursor:pointer; }
+    .hamburger span { display:block;width:22px;height:1.5px;background:var(--text);margin:5px 0; }
+
+    .hero { min-height:100vh;display:grid;grid-template-columns:1fr 1fr;overflow:hidden; }
+    .hero-left { background:var(--rose);display:flex;flex-direction:column;justify-content:center;padding:8rem 4rem 4rem 5rem; }
+    .hero-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.8rem;display:flex;align-items:center;gap:0.8rem; }
+    .hero-tag::before { content:'';width:28px;height:1px;background:var(--gold); }
+    .hero h1 { font-family:'Cormorant Garamond',serif;font-size:clamp(2.6rem,4.5vw,4rem);font-weight:300;line-height:1.15;margin-bottom:1.8rem; }
+    .hero h1 em { font-style:italic;color:var(--gold); }
+    .hero-body { font-size:0.93rem;line-height:1.9;color:var(--text-light);max-width:400px;margin-bottom:2.5rem; }
+    .hero-btns { display:flex;gap:1rem;flex-wrap:wrap; }
+    .btn-primary { background:var(--gold);color:var(--white);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-primary:hover { background:#a0876a;transform:translateY(-2px); }
+    .btn-outline { background:transparent;color:var(--gold);border:1px solid var(--gold);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-outline:hover { background:var(--gold);color:var(--white);transform:translateY(-2px); }
+    .hero-right { position:relative;overflow:hidden; }
+    .hero-right img { width:100%;height:100%;object-fit:cover;filter:brightness(0.92) saturate(0.9); }
+    .hero-overlay { position:absolute;inset:0;background:linear-gradient(to right,rgba(245,230,224,0.35) 0%,transparent 40%); }
+
+    section.sec { padding:6rem 5vw; }
+    .section-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.7rem; }
+    .section-tag::before { content:'';width:24px;height:1px;background:var(--gold); }
+    .section-title { font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,3.2vw,2.8rem);font-weight:300;line-height:1.2;margin-bottom:1.5rem; }
+    .section-title em { font-style:italic;color:var(--gold); }
+
+    .services-intro { display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:end;margin-bottom:3.5rem; }
+    .services-desc { color:var(--text-light);font-size:0.93rem;line-height:1.9; }
+    .services-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.4rem; }
+    .service-card { background:var(--rose);border-radius:20px;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;text-decoration:none;color:inherit;display:block; }
+    .service-card:hover { transform:translateY(-5px);box-shadow:0 18px 45px rgba(58,46,42,0.1); }
+    .service-card-img { width:100%;height:195px;object-fit:cover;transition:transform 0.5s;display:block; }
+    .service-card:hover .service-card-img { transform:scale(1.04); }
+    .service-info { padding:1.4rem; }
+    .service-info h3 { font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;margin-bottom:0.4rem; }
+    .service-info p { color:var(--text-light);font-size:0.82rem;line-height:1.7;margin-bottom:0.9rem; }
+    .service-link { font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:0.4rem; }
+    .service-link::after { content:'→';transition:transform 0.2s; }
+    .service-card:hover .service-link::after { transform:translateX(4px); }
+
+    .sessions-bg { background:var(--rose); }
+    .sessions-top { display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:3rem; }
+    .sessions-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.4rem; }
+    .session-card { background:var(--white);border-radius:16px;padding:1.7rem;border:1px solid rgba(184,154,122,0.15);transition:transform 0.3s,box-shadow 0.3s; }
+    .session-card:hover { transform:translateY(-4px);box-shadow:0 14px 36px rgba(58,46,42,0.08); }
+    .session-badge { display:inline-block;background:var(--sage);color:var(--text);font-size:0.63rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.28rem 0.75rem;border-radius:50px;margin-bottom:0.9rem; }
+    .session-badge.full { background:#f0c8c0; }
+    .session-badge.cancelled { background:#e0e0e0; }
+    .session-card h3 { font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;margin-bottom:0.4rem; }
+    .session-meta { display:flex;gap:1rem;margin:0.7rem 0;font-size:0.79rem;color:var(--text-light);flex-wrap:wrap; }
+    .session-desc { font-size:0.83rem;color:var(--text-light);line-height:1.7;margin-bottom:1.2rem; }
+    .btn-book { display:block;text-align:center;background:var(--gold);color:var(--white);padding:0.7rem 1.5rem;border-radius:50px;font-size:0.76rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s;border:none;cursor:pointer;width:100%;font-family:'Jost',sans-serif; }
+    .btn-book:hover { background:#a0876a; }
+    .btn-book:disabled { background:#ccc;cursor:not-allowed; }
+
+    .about-grid { display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center; }
+    .about-image { position:relative; }
+    .about-image img { width:100%;border-radius:24px;filter:brightness(0.95) saturate(0.9);position:relative;z-index:1; }
+    .about-image::before { content:'';position:absolute;top:-18px;left:-18px;right:18px;bottom:18px;border:1px solid var(--warm);border-radius:24px; }
+    .about-quote { font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-style:italic;color:var(--gold);line-height:1.7;margin:1.5rem 0;padding-left:1.5rem;border-left:2px solid var(--warm); }
+    .about-text { font-size:0.93rem;line-height:1.9;color:var(--text-light); }
+
+    .contact-inner { display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start; }
+    .contact-item { display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.1rem; }
+    .contact-icon { width:38px;height:38px;background:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0; }
+    .contact-label { font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold); }
+    .contact-value { font-size:0.88rem;color:var(--text);margin-top:0.2rem; }
+    .cform { background:var(--white);border-radius:24px;padding:2.4rem; }
+    .cform h3 { font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;margin-bottom:1.4rem; }
+    .fg { margin-bottom:1.1rem; }
+    .fg label { display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.35rem; }
+    .fg input,.fg select,.fg textarea { width:100%;padding:0.72rem 1rem;border:1px solid rgba(184,154,122,0.22);border-radius:10px;background:var(--rose);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);outline:none;transition:border-color 0.2s; }
+    .fg input:focus,.fg select:focus,.fg textarea:focus { border-color:var(--gold); }
+    .fg textarea { resize:vertical;min-height:90px; }
+    .form-success { display:none;margin-top:0.8rem;padding:0.9rem;background:var(--sage);border-radius:10px;font-size:0.85rem;text-align:center; }
+
+    footer { background:var(--text);color:rgba(253,250,248,0.55);padding:2.8rem 5vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem; }
+    .footer-logo { font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--white);letter-spacing:0.08em; }
+    .footer-logo span { color:var(--gold); }
+    .footer-links { display:flex;gap:1.8rem;flex-wrap:wrap; }
+    footer a { color:rgba(253,250,248,0.55);text-decoration:none;font-size:0.78rem;transition:color 0.2s; }
+    footer a:hover { color:var(--gold); }
+
+    .modal-overlay { position:fixed;inset:0;z-index:200;background:rgba(58,46,42,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s; }
+    .modal-overlay.open { opacity:1;pointer-events:all; }
+    .modal { background:var(--white);border-radius:24px;padding:2.5rem;max-width:480px;width:90%;transform:translateY(20px);transition:transform 0.3s;max-height:90vh;overflow-y:auto;position:relative; }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal h2 { font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:300;margin-bottom:0.4rem; }
+    .modal-close { position:absolute;top:1rem;right:1.2rem;background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--text-light);line-height:1; }
+    .admin-link { position:fixed;bottom:1.8rem;right:1.8rem;z-index:99;background:rgba(58,46,42,0.75);color:var(--white);padding:0.6rem 1.1rem;border-radius:50px;text-decoration:none;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;backdrop-filter:blur(8px); }
+    .admin-link:hover { background:var(--text); }
+
+    @media(max-width:900px){
+      nav{padding:1.1rem 1.5rem;}
+      .nav-links,.nav-cta{display:none;}
+      .hamburger{display:block;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-cta{display:block;}
+      .hero{grid-template-columns:1fr;}
+      .hero-right{height:55vw;}
+      .hero-left{padding:6rem 1.5rem 3rem;}
+      section.sec{padding:4rem 1.5rem;}
+      .services-intro,.about-grid,.contact-inner{grid-template-columns:1fr;gap:1.5rem;}
+    }
+  </style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">Magic<span>Space</span></a>
+  <ul class="nav-links">
+    <li class="dropdown">
+      <a href="dula.html">Dula</a>
+      <div class="dropdown-menu">
+        <a href="dula.html#joga-tehotne">Joga pre tehotné</a>
+        <a href="dula.html#porod">Sprevádzanie pri pôrode</a>
+        <a href="dula.html#cerrada">Cerrada / Rebozo</a>
+        <a href="dula.html#kurz">Príprava na pôrod</a>
+      </div>
+    </li>
+    <li><a href="joga-park.html">Joga v parku</a></li>
+    <li><a href="soundhealing.html">Sound Healing</a></li>
+    <li class="dropdown">
+      <a href="firmy.html">Pre firmy</a>
+      <div class="dropdown-menu">
+        <a href="firmy.html#joga">Firemná joga</a>
+        <a href="firmy.html#sound">Sound pre firmy</a>
+      </div>
+    </li>
+    <li><a href="#o-mne">O mne</a></li>
+    <li><a href="#kontakt">Kontakt</a></li>
+  </ul>
+  <a href="#sesie" class="nav-cta">Rezervovať</a>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Martin, Slovensko</div>
+    <h1>Vítam Vás<br>v mojom <em>priestore</em></h1>
+    <p class="hero-body">Moje poslanie je priniesť pokoj, zdravie a istotu do každého okamihu tvojho života. Sprevádzam ženy s úctou, porozumením a materinskou nehou, ktorá neláme, ale drží.</p>
+    <div class="hero-btns">
+      <a href="#sesie" class="btn-primary">Rezervovať sésiu</a>
+      <a href="#o-mne" class="btn-outline">O mne</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img src="/uploads/priestor.png" alt="Magic Space">
+    <div class="hero-overlay"></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="sec" id="sluzby">
+  <div class="services-intro">
+    <div>
+      <div class="section-tag">Čo ponúkam</div>
+      <h2 class="section-title">Služby pre telo<br>aj <em>dušu</em></h2>
+    </div>
+    <p class="services-desc">Sprevádzam ženy od tehotenstva cez pôrod až po šestonedelie. A pre každého prinášam priestor na regeneráciu cez jogu, meditácie a soundhealing.</p>
+  </div>
+  <div class="services-grid">
+
+    <a href="dula.html" class="service-card">
+      <img class="service-card-img" src="/uploads/img_1773388949.jpg" alt="Dula">
+      <div class="service-info">
+        <h3>Dula</h3>
+        <p>Sprevádzanie počas tehotenstva, pôrodu a šestonedelia s empatiou a odbornosťou.</p>
+        <span class="service-link">Zistiť viac</span>
+      </div>
+    </a>
+
+    <a href="dula.html#joga-tehotne" class="service-card">
+      <img class="service-card-img" src="/uploads/pregnant_yoga.jpg" alt="Joga pre tehotné">
+      <div class="service-info">
+        <h3>Joga pre tehotné</h3>
+        <p>Jemná joga špeciálne prispôsobená tehotnému telu. Podpora mysle aj tela počas tehotenstva.</p>
+        <span class="service-link">Viac info</span>
+      </div>
+    </a>
+
+    <a href="dula.html#kurz" class="service-card">
+      <img class="service-card-img" src="/uploads/Pregnantcourse.jpg" alt="Príprava na pôrod">
+      <div class="service-info">
+        <h3>Skupinová príprava na pôrod</h3>
+        <p>Kurz pre páry a mamičky – praktická a emocionálna príprava na pôrod a príchod bábätka.</p>
+        <span class="service-link">Zistiť viac</span>
+      </div>
+    </a>
+
+    <a href="soundhealing.html" class="service-card">
+      <img class="service-card-img" src="/uploads/sound.jpg" alt="Sound Healing">
+      <div class="service-info">
+        <h3>Sound Healing</h3>
+        <p>Hlboká relaxácia s tibetskými spievajúcimi miskami. Pre jednotlivcov aj skupiny.</p>
+        <span class="service-link">Viac info</span>
+      </div>
+    </a>
+
+    <a href="dula.html#cerrada" class="service-card">
+      <img class="service-card-img" src="/uploads/img_1773388949.jpg" alt="Masáž rebozo">
+      <div class="service-info">
+        <h3>Masáž Rebozo</h3>
+        <p>Tradičná mexická technika – jemné zavinutie pre hlboký pocit bezpečia a uzavretia po pôrode.</p>
+        <span class="service-link">Viac info</span>
+      </div>
+    </a>
+
+    <a href="joga-park.html" class="service-card">
+      <img class="service-card-img" src="/uploads/yoga_park.png" alt="Joga v parku">
+      <div class="service-info">
+        <h3>Joga v parku</h3>
+        <p>Letné lekcie jogy v prírode – pre každého, kto si chce nabiť energiu pod holým nebom.</p>
+        <span class="service-link">Pozrieť projekt →</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- SESSIONS -->
+<section class="sec sessions-bg" id="sesie">
+  <div class="sessions-top">
+    <div>
+      <div class="section-tag">Rezervácie</div>
+      <h2 class="section-title">Najbližšie <em>sésie</em></h2>
+      <p style="color:var(--text-light);font-size:0.9rem;line-height:1.8;max-width:480px;margin-top:0.5rem">
+        Joga pre tehotné, Sound Healing, Intuitívny tanec a ďalšie.<br>
+        Vyberte sésiu a rezervujte si miesto – počet miest je obmedzený.
+      </p>
+    </div>
+    <a href="joga-park.html" style="text-decoration:none;background:var(--white);border:1px solid rgba(184,154,122,0.3);border-radius:16px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.8rem;color:var(--text);transition:box-shadow 0.2s" onmouseover="this.style.boxShadow='0 8px 24px rgba(58,46,42,0.08)'" onmouseout="this.style.boxShadow=''">
+      <span style="font-size:1.4rem">🌿</span>
+      <div><div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">Samostatný projekt</div><div style="font-size:0.88rem;font-weight:400">Joga v parku →</div></div>
+    </a>
+  </div>
+  <div class="sessions-grid" id="sessionsGrid"></div>
+</section>
+
+<!-- ABOUT -->
+<section class="sec" id="o-mne">
+  <div class="about-grid">
+    <div class="about-image">
+      <img src="/uploads/priestor.png" alt="Anastasia – Magic Space">
+    </div>
+    <div>
+      <div class="section-tag">O mne</div>
+      <h2 class="section-title">Anastasia –<br>sprevádzam ženy<br>s <em>láskou</em></h2>
+      <blockquote class="about-quote">„Magic Space je pozvanie – nájsť ticho uprostred ruchu, návrat k sebe a k tomu, čo je skutočne dôležité."</blockquote>
+      <p class="about-text">
+        Volám sa Anastasia a som certifikovaná dula, inštruktorka jogy a sound healing terapeut.
+        Moja cesta k tomuto povolaniu nebola náhodná – prešla som si vlastným materstvom, hľadaním a uvedomením, že ženy si navzájom potrebujú.
+      </p>
+      <p class="about-text" style="margin-top:1rem">
+        Verím, že každá žena si zaslúži byť sprevádzaná s rešpektom, bez odsudzovania a s priestorom byť presne taká, aká je.
+        Či už prechádzaš tehotenstvom, pôrodom, šestonedelím – alebo jednoducho hľadáš chvíľu len pre seba.
+      </p>
+      <p class="about-text" style="margin-top:1rem">
+        Moje poslanie je priniesť pokoj, zdravie a istotu do každého okamihu tvojho života.
+        Podporujem telo aj dušu – cez jogu, meditácie, soundhealing a ženské rituály.
+        <!-- Tu môžeš doplniť ďalší text o sebe, vzdelaní, príbehu... -->
+      </p>
+
+      <!-- HODNOTY / CERTIFIKÁTY - doplň podľa seba -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1.8rem 0">
+        <div style="background:var(--rose);border-radius:12px;padding:1rem">
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Certifikácia</div>
+          <div style="font-size:0.88rem">Certifikovaná dula</div>
+        </div>
+        <div style="background:var(--rose);border-radius:12px;padding:1rem">
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Prax</div>
+          <div style="font-size:0.88rem">Joga & Sound Healing</div>
+        </div>
+        <div style="background:var(--rose);border-radius:12px;padding:1rem">
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Lokácia</div>
+          <div style="font-size:0.88rem">Martin, Slovensko</div>
+        </div>
+        <div style="background:var(--rose);border-radius:12px;padding:1rem">
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Dostupnosť</div>
+          <div style="font-size:0.88rem">Pon–Sob, pohotovosť 24/7</div>
+        </div>
+      </div>
+
+      <a href="#kontakt" class="btn-primary">Napísať mi</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="sec" id="kontakt" style="background:var(--blush)">
+  <div class="section-tag">Kontakt</div>
+  <h2 class="section-title" style="margin-bottom:3rem">Napíšte mi</h2>
+  <div class="contact-inner">
+    <div>
+      <p style="color:var(--text-light);font-size:0.93rem;line-height:1.9;margin-bottom:2rem">Som tu pre vás Pondelok – Sobota 9:00–20:00. V naliehavých prípadoch kedykoľvek.</p>
+      <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-label">Adresa</div><div class="contact-value">Andreja Kmeťa 577/22, Martin 036 01</div></div></div>
+      <div class="contact-item"><div class="contact-icon">📞</div><div><div class="contact-label">Telefón / WhatsApp</div><div class="contact-value"><a href="tel:0951247995" style="color:var(--text);text-decoration:none">0951 247 995</a></div></div></div>
+      <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">E-mail</div><div class="contact-value"><a href="mailto:info@magicspace.sk" style="color:var(--text);text-decoration:none">info@magicspace.sk</a></div></div></div>
+      <div class="contact-item"><div class="contact-icon">📸</div><div><div class="contact-label">Instagram</div><div class="contact-value"><a href="https://www.instagram.com/magicspacedula/" target="_blank" style="color:var(--gold);text-decoration:none">@magicspacedula</a></div></div></div>
+      <div style="margin-top:2rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div><div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.2rem">Pon – Sob</div><div style="font-size:0.88rem">9:00 – 20:00</div></div>
+        <div><div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.2rem">Pohotovosť</div><div style="font-size:0.88rem">Kedykoľvek</div></div>
+      </div>
+    </div>
+    <div class="cform">
+      <h3>Pošlite správu</h3>
+      <form id="contactForm" onsubmit="submitContact(event)">
+        <div class="fg"><label>Meno a priezvisko</label><input type="text" required id="cName" placeholder="Jana Nováková"></div>
+        <div class="fg"><label>E-mail</label><input type="email" required id="cEmail" placeholder="jana@email.sk"></div>
+        <div class="fg"><label>Telefón (nepovinné)</label><input type="tel" id="cPhone" placeholder="09xx xxx xxx"></div>
+        <div class="fg"><label>Téma</label>
+          <select id="cTopic">
+            <option>Dula – tehotenstvo / pôrod</option>
+            <option>Joga pre tehotné</option>
+            <option>Skupinová príprava na pôrod</option>
+            <option>Sound Healing</option>
+            <option>Masáž Rebozo</option>
+            <option>Joga v parku</option>
+            <option>Firemná joga / Sound pre firmy</option>
+            <option>Iné</option>
+          </select>
+        </div>
+        <div class="fg"><label>Správa</label><textarea required placeholder="Napíšte mi, čo potrebujete…" id="cMsg"></textarea></div>
+        <button type="submit" class="btn-book">Odoslať správu</button>
+        <div class="form-success" id="formSuccess">✨ Ďakujem! Ozvem sa vám čoskoro.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Magic<span>Space</span></div>
+  <div class="footer-links">
+    <a href="dula.html">Dula</a>
+    <a href="joga-park.html">Joga v parku</a>
+    <a href="soundhealing.html">Sound Healing</a>
+    <a href="firmy.html">Pre firmy</a>
+    <a href="#sesie">Sésie</a>
+    <a href="#kontakt">Kontakt</a>
+  </div>
+  <p>© 2025 MagicSpace · Martin</p>
+</footer>
+
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Rezervácia</h2>
+    <p id="modalMeta" style="color:var(--text-light);font-size:0.85rem;margin-bottom:1.4rem"></p>
+    <form onsubmit="submitBooking(event)">
+      <div class="fg"><label>Meno a priezvisko</label><input type="text" required id="bName" placeholder="Jana Nováková"></div>
+      <div class="fg"><label>E-mail</label><input type="email" required id="bEmail" placeholder="jana@email.sk"></div>
+      <div class="fg"><label>Telefón</label><input type="tel" required id="bPhone" placeholder="09xx xxx xxx"></div>
+      <div class="fg"><label>Poznámka (nepovinné)</label><textarea id="bNote" placeholder="Prípadné otázky…"></textarea></div>
+      <button type="submit" class="btn-book">Potvrdiť rezerváciu</button>
+      <div class="form-success" id="bookSuccess">✨ Rezervácia odoslaná! Potvrdenie príde na e-mail.</div>
+    </form>
+  </div>
+</div>
+
+<a href="admin.html" class="admin-link">⚙ Admin</a>
+
+<script src="/api.js"></script>
+<script>
+async function renderSessions() {
+  const grid = document.getElementById('sessionsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<p style="color:var(--text-light);padding:1rem">Načítavam sésie…</p>';
+  try {
+    const sessions = await API.getSessions('main');
+    if (!sessions.length) { grid.innerHTML = '<p style="color:var(--text-light)">Momentálne žiadne sésie. Sledujte nás na Instagrame.</p>'; return; }
+    grid.innerHTML = sessions.map(s => {
+      const isFull = s.booked >= s.spots || s.badge === 'full';
+      const isCan  = s.badge === 'cancelled';
+      const df = new Date(s.date).toLocaleDateString('sk-SK', {day:'numeric', month:'long', year:'numeric'});
+      const left = s.spots - s.booked;
+      const imgHtml = s.image_url ? `<img src="${s.image_url}" style="width:calc(100% + 3.4rem);margin:-1.7rem -1.7rem 1.2rem;height:155px;object-fit:cover;display:block;border-radius:14px 14px 0 0">` : '';
+      return `<div class="session-card" style="${s.image_url?'padding-top:0;overflow:hidden':''}">
+        ${imgHtml}
+        <span class="session-badge ${isFull?'full':''} ${isCan?'cancelled':''}">${isCan?'Zrušené':isFull?'Plná kapacita':left+' voľných miest'}</span>
+        <h3>${s.title}</h3>
+        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${s.time}</span></div>
+        <div class="session-meta"><span>⏱ ${s.duration}</span><span>💰 ${s.price}</span></div>
+        <p class="session-desc">${s.desc}</p>
+        <button class="btn-book" ${isFull||isCan?'disabled':''} onclick="openBooking(${s.id})">${isCan?'Zrušené':isFull?'Plná kapacita':'Rezervovať miesto'}</button>
+      </div>`;
+    }).join('');
+  } catch(e) { grid.innerHTML = '<p style="color:var(--text-light)">Chyba načítania sésií.</p>'; }
+}
+
+let aId = null;
+function openBooking(id) {
+  aId = id;
+  document.getElementById('modalTitle').textContent = 'Rezervácia';
+  document.getElementById('modalMeta').textContent = '';
+  document.getElementById('bookSuccess').style.display = 'none';
+  document.getElementById('bookingModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Load session detail
+  API.getSessions('main').then(sessions => {
+    const s = sessions.find(x => x.id === id);
+    if (s) {
+      document.getElementById('modalTitle').textContent = s.title;
+      document.getElementById('modalMeta').textContent = `📅 ${new Date(s.date).toLocaleDateString('sk-SK',{day:'numeric',month:'long'})}  ·  🕐 ${s.time}  ·  💰 ${s.price}`;
+    }
+  });
+}
+function closeModal() { document.getElementById('bookingModal').classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('bookingModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+async function submitBooking(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Odosielam…';
+  try {
+    await API.createBooking({
+      session_id: aId,
+      name:  document.getElementById('bName').value,
+      email: document.getElementById('bEmail').value,
+      phone: document.getElementById('bPhone').value,
+      note:  document.getElementById('bNote').value,
+    });
+    document.getElementById('bookSuccess').style.display = 'block';
+    setTimeout(() => { closeModal(); renderSessions(); e.target.reset(); btn.disabled=false; btn.textContent='Potvrdiť rezerváciu'; }, 2600);
+  } catch(err) {
+    alert(err.message);
+    btn.disabled = false; btn.textContent = 'Potvrdiť rezerváciu';
+  }
+}
+
+async function submitContact(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'Odosielam…';
+  try {
+    await API.createContact({
+      name:    document.getElementById('cName').value,
+      email:   document.getElementById('cEmail').value,
+      phone:   document.getElementById('cPhone').value,
+      topic:   document.getElementById('cTopic').value,
+      message: document.getElementById('cMsg').value,
+    });
+    document.getElementById('formSuccess').style.display = 'block';
+    document.getElementById('contactForm').reset();
+    setTimeout(() => { document.getElementById('formSuccess').style.display='none'; }, 4000);
+  } catch(err) { alert(err.message); }
+  btn.disabled = false; btn.textContent = 'Odoslať správu';
+}
+
+window.addEventListener('scroll', () => { document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 60); });
+document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mainNav').classList.toggle('menu-open'); });
+renderSessions();
+</script>
+</body>
+</html>

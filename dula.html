@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dula · Joga pre tehotné · Rebozo | Magic Space Martin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#7a6660;--white:#fdfaf8;--gold:#b89a7a; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Jost',sans-serif;background:var(--white);color:var(--text);font-weight:300;overflow-x:hidden; }
+
+    nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 3rem;background:rgba(253,250,248,0.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(184,154,122,0.12);transition:padding 0.3s; }
+    nav.scrolled { padding:0.85rem 3rem; }
+    .nav-logo { font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;letter-spacing:0.08em;color:var(--text);text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex;gap:1.8rem;list-style:none;align-items:center; }
+    .nav-links a { text-decoration:none;color:var(--text-light);font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s; }
+    .nav-links a:hover,.nav-links a.active { color:var(--gold); }
+    .dropdown { position:relative; }
+    .dropdown > a::after { content:' ▾';font-size:0.6rem; }
+    .dropdown-menu { position:absolute;top:calc(100% + 10px);left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
+    .dropdown:hover .dropdown-menu { opacity:1;pointer-events:all;transform:translateY(0); }
+    .dropdown-menu a { display:block;padding:0.6rem 1.3rem;font-size:0.77rem;color:var(--text-light);white-space:nowrap; }
+    .dropdown-menu a:hover { color:var(--gold);background:var(--rose); }
+    .nav-cta { background:var(--gold);color:var(--white);padding:0.58rem 1.35rem;border-radius:50px;text-decoration:none;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s; }
+    .nav-cta:hover { background:#a0876a; }
+    .hamburger { display:none;background:none;border:none;cursor:pointer; }
+    .hamburger span { display:block;width:22px;height:1.5px;background:var(--text);margin:5px 0; }
+
+    /* PAGE HERO */
+    .page-hero { min-height:70vh;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;margin-top:0; }
+    .page-hero-left { background:var(--rose);display:flex;flex-direction:column;justify-content:center;padding:8rem 4rem 4rem 5rem; }
+    .page-hero-right { position:relative;overflow:hidden; }
+    .page-hero-right img { width:100%;height:100%;object-fit:cover;filter:brightness(0.9) saturate(0.88); }
+    .hero-overlay { position:absolute;inset:0;background:linear-gradient(to right,rgba(245,230,224,0.3) 0%,transparent 40%); }
+
+    .hero-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.8rem; }
+    .hero-tag::before { content:'';width:28px;height:1px;background:var(--gold); }
+    .page-hero h1 { font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,4vw,3.6rem);font-weight:300;line-height:1.15;margin-bottom:1.6rem; }
+    .page-hero h1 em { font-style:italic;color:var(--gold); }
+    .page-hero-body { font-size:0.93rem;line-height:1.9;color:var(--text-light);max-width:420px;margin-bottom:2rem; }
+
+    /* NAV ANCHORS */
+    .anchor-nav { background:var(--white);border-bottom:1px solid rgba(184,154,122,0.15);position:sticky;top:64px;z-index:90;overflow-x:auto; }
+    .anchor-nav-inner { display:flex;gap:0;padding:0 5vw;min-width:max-content; }
+    .anchor-nav a { display:block;padding:1rem 1.4rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-light);text-decoration:none;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap; }
+    .anchor-nav a:hover,.anchor-nav a.active { color:var(--gold);border-bottom-color:var(--gold); }
+
+    /* SECTIONS */
+    .sec { padding:6rem 5vw; }
+    .section-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.7rem; }
+    .section-tag::before { content:'';width:24px;height:1px;background:var(--gold); }
+    .section-title { font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,3.2vw,2.7rem);font-weight:300;line-height:1.2;margin-bottom:1.4rem; }
+    .section-title em { font-style:italic;color:var(--gold); }
+    .body-text { font-size:0.93rem;line-height:1.9;color:var(--text-light);max-width:640px; }
+
+    /* TWO COL */
+    .two-col { display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center; }
+    .two-col.reverse { direction:rtl; }
+    .two-col.reverse > * { direction:ltr; }
+    .col-image { position:relative; }
+    .col-image img { width:100%;border-radius:24px;filter:brightness(0.93) saturate(0.88);position:relative;z-index:1; }
+    .col-image::before { content:'';position:absolute;top:-16px;left:-16px;right:16px;bottom:16px;border:1px solid var(--warm);border-radius:24px; }
+    .col-image.no-deco::before { display:none; }
+    .col-image.right-deco::before { left:16px;right:-16px;top:-16px;bottom:16px; }
+
+    /* FEATURE LIST */
+    .feature-list { list-style:none;margin:1.5rem 0; }
+    .feature-list li { display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.85rem;font-size:0.9rem;color:var(--text-light);line-height:1.6; }
+    .feature-list li::before { content:'✦';color:var(--gold);font-size:0.7rem;margin-top:0.3rem;flex-shrink:0; }
+
+    /* QUOTE */
+    .pull-quote { font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);line-height:1.7;padding:1.8rem 2rem;border-left:3px solid var(--warm);background:var(--rose);border-radius:0 16px 16px 0;margin:2rem 0; }
+
+    /* PRICE BOX */
+    .price-box { background:var(--rose);border-radius:20px;padding:2rem;margin-top:2rem;display:inline-block;min-width:220px; }
+    .price-label { font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem; }
+    .price-value { font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300; }
+    .price-note { font-size:0.8rem;color:var(--text-light);margin-top:0.3rem; }
+
+    /* STEPS */
+    .steps { counter-reset:steps;margin:2rem 0; }
+    .step { display:flex;gap:1.5rem;margin-bottom:1.8rem;align-items:flex-start; }
+    .step-num { width:40px;height:40px;background:var(--gold);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.1rem;flex-shrink:0; }
+    .step-body h4 { font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.3rem; }
+    .step-body p { font-size:0.87rem;color:var(--text-light);line-height:1.7; }
+
+    /* CARDS ROW */
+    .cards-row { display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.3rem;margin-top:2rem; }
+    .info-card { background:var(--white);border-radius:16px;padding:1.6rem;border:1px solid rgba(184,154,122,0.15); }
+    .info-card-icon { font-size:1.5rem;margin-bottom:0.8rem; }
+    .info-card h4 { font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.4rem; }
+    .info-card p { font-size:0.83rem;color:var(--text-light);line-height:1.7; }
+
+    /* BTNS */
+    .btn-primary { background:var(--gold);color:var(--white);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-primary:hover { background:#a0876a;transform:translateY(-2px); }
+    .btn-outline { background:transparent;color:var(--gold);border:1px solid var(--gold);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-outline:hover { background:var(--gold);color:var(--white); }
+
+    /* DIVIDER */
+    .divider { width:60px;height:1px;background:var(--warm);margin:2rem 0; }
+
+    /* FAQ */
+    .faq { margin-top:2rem; }
+    .faq-item { border-top:1px solid rgba(184,154,122,0.18);padding:1.2rem 0;cursor:pointer; }
+    .faq-q { display:flex;justify-content:space-between;align-items:center;font-size:0.93rem;font-weight:400; }
+    .faq-q span { color:var(--gold);font-size:1.2rem;transition:transform 0.3s; }
+    .faq-a { font-size:0.87rem;color:var(--text-light);line-height:1.8;max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s; }
+    .faq-item.open .faq-q span { transform:rotate(45deg); }
+    .faq-item.open .faq-a { max-height:400px;padding-top:0.8rem; }
+
+    /* CONTACT STRIP */
+    .contact-strip { background:var(--text);color:var(--white);padding:4rem 5vw;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap; }
+    .contact-strip h2 { font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300; }
+    .contact-strip h2 em { font-style:italic;color:var(--gold); }
+    .contact-strip p { color:rgba(253,250,248,0.6);font-size:0.9rem;margin-top:0.5rem; }
+
+    footer { background:var(--text);color:rgba(253,250,248,0.55);padding:2rem 5vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;border-top:1px solid rgba(255,255,255,0.06); }
+    .footer-logo { font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--white); }
+    .footer-logo span { color:var(--gold); }
+    footer a { color:rgba(253,250,248,0.55);text-decoration:none;font-size:0.78rem;transition:color 0.2s; }
+    footer a:hover { color:var(--gold); }
+    .footer-links { display:flex;gap:1.8rem;flex-wrap:wrap; }
+
+    @media(max-width:900px){
+      nav{padding:1.1rem 1.5rem;}
+      .nav-links,.nav-cta{display:none;}
+      .hamburger{display:block;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-cta{display:block;}
+      .page-hero{grid-template-columns:1fr;}
+      .page-hero-right{height:55vw;}
+      .page-hero-left{padding:6rem 1.5rem 3rem;}
+      .sec{padding:4rem 1.5rem;}
+      .two-col,.two-col.reverse{grid-template-columns:1fr;gap:2rem;direction:ltr;}
+      .contact-strip{flex-direction:column;text-align:center;}
+    }
+  </style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">Magic<span>Space</span></a>
+  <ul class="nav-links">
+    <li class="dropdown">
+      <a href="dula.html" class="active">Dula</a>
+      <div class="dropdown-menu">
+        <a href="#joga-tehotne">Joga pre tehotné</a>
+        <a href="#kontrakcie">Kontrakcie</a>
+        <a href="#cerrada">Cerrada / Rebozo</a>
+        <a href="#kurz">Príprava na pôrod</a>
+      </div>
+    </li>
+    <li><a href="joga-park.html">Joga v parku</a></li>
+    <li><a href="soundhealing.html">Sound Healing</a></li>
+    <li class="dropdown">
+      <a href="firmy.html">Pre firmy</a>
+      <div class="dropdown-menu">
+        <a href="firmy.html#joga">Firemná joga</a>
+        <a href="firmy.html#sound">Sound pre firmy</a>
+      </div>
+    </li>
+    <li><a href="index.html#o-mne">O mne</a></li>
+    <li><a href="index.html#kontakt">Kontakt</a></li>
+  </ul>
+  <a href="index.html#kontakt" class="nav-cta">Napísať mi</a>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="page-hero-left">
+    <div class="hero-tag">Sprevádzanie žien</div>
+    <h1>Dula &<br><em>materinská</em><br>starostlivosť</h1>
+    <p class="page-hero-body">
+      Sprevádzam ženy od prvého tepu bábätka cez pôrod až po prvé kroky v šestonedelí. S nehou, bez odsudzovania a vždy po tvojom boku.
+    </p>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <a href="index.html#kontakt" class="btn-primary">Napísať mi</a>
+      <a href="#sluzby" class="btn-outline">Čo ponúkam</a>
+    </div>
+  </div>
+  <div class="page-hero-right">
+    <img src="/uploads/pregnant_yoga.jpg" alt="Dula">
+    <div class="hero-overlay"></div>
+  </div>
+</section>
+
+<!-- ANCHOR NAV -->
+<div class="anchor-nav">
+  <div class="anchor-nav-inner">
+    <a href="#dula-co">Čo je dula</a>
+    <a href="#joga-tehotne">Joga pre tehotné</a>
+    <a href="#porod">Sprevádzanie pri pôrode</a>
+    <a href="#cerrada">Cerrada / Rebozo</a>
+    <a href="#kurz">Príprava na pôrod</a>
+  </div>
+</div>
+
+<!-- ČO JE DULA -->
+<section class="sec" id="dula-co">
+  <div class="two-col">
+    <div>
+      <div class="section-tag">Kto som</div>
+      <h2 class="section-title">Dula –<br><em>sprievodkyňa</em><br>na ceste materstva</h2>
+      <p class="body-text">
+        Dula je nezdravotnícka sprevádzačka, ktorá poskytuje emocionálnu, informačnú a fyzickú podporu počas tehotenstva, pri pôrode a v šestonedelí.
+      </p>
+      <div class="divider"></div>
+      <p class="body-text">
+        Nie som lekár ani pôrodná asistentka – som žena, ktorá je tu pre teba. Bez posudzovania. S otvoreným srdcom a rukami, ktoré držia, keď to treba.
+      </p>
+      <blockquote class="pull-quote">
+        „Každá žena si zaslúži cítiť sa bezpečne, vypočutá a sprevádzaná v jednom z najdôležitejších okamihov svojho života."
+      </blockquote>
+      <a href="index.html#kontakt" class="btn-primary">Dohovorte sa so mnou</a>
+    </div>
+    <div class="col-image">
+      <img src="/uploads/img_1773388949.jpg" alt="Dula sprevádzanie">
+    </div>
+  </div>
+
+  <div class="cards-row" style="margin-top:4rem" id="sluzby">
+    <div class="info-card">
+      <div class="info-card-icon">🤱</div>
+      <h4>Prenatálna podpora</h4>
+      <p>Stretnutia počas tehotenstva, odpovede na otázky, príprava na pôrod a informovaný výber.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🌸</div>
+      <h4>Sprevádzanie pri pôrode</h4>
+      <p>Som s tebou v pôrodnici alebo doma – fyzická prítomnosť, masáže, polohy, dychové cvičenia.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🕊️</div>
+      <h4>Postnatálna starostlivosť</h4>
+      <p>Podpora v šestonedelí, pomoc s dojčením, emocionálne spracovanie pôrodu, Cerrada rituál.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">📞</div>
+      <h4>Telefonická pohotovosť</h4>
+      <p>Kedykoľvek mi môžeš zavolať. Otázky, neistoty, nočné strachy – som tu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- JOGA PRE TEHOTNÉ -->
+<section class="sec" id="joga-tehotne" style="background:var(--rose)">
+  <div class="two-col reverse">
+    <div class="col-image right-deco">
+      <img src="/uploads/pregnant_yoga.jpg" alt="Joga pre tehotné">
+    </div>
+    <div>
+      <div class="section-tag">Pohyb & dych</div>
+      <h2 class="section-title">Joga pre<br><em>tehotné</em></h2>
+      <p class="body-text">
+        Jemná joga špeciálne prispôsobená meniacemu sa telu počas tehotenstva. Každá lekcia je bezpečná, hravá a plná lásky k sebe.
+      </p>
+      <ul class="feature-list">
+        <li>Uvoľnenie napätia v chrbte, bokoch a nohách</li>
+        <li>Dychové cvičenia na prípravu na pôrod</li>
+        <li>Posilnenie svalov panvového dna</li>
+        <li>Relaxácia a meditácie pre myseľ aj telo</li>
+        <li>Komunita tehotných žien, zdieľanie skúseností</li>
+        <li>Vhodné od 2. trimestra (prípadne skôr po dohode)</li>
+      </ul>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:1.5rem">
+        <div class="price-box">
+          <div class="price-label">Cena za lekciu</div>
+          <div class="price-value">12 €</div>
+          <div class="price-note">Stredy 17:30 · 75 min</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.8rem">
+          <a href="index.html#sesie" class="btn-primary">Rezervovať miesto</a>
+          <a href="index.html#kontakt" class="btn-outline">Opýtať sa</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPREVÁDZANIE PRI PÔRODE -->
+<section class="sec" id="porod">
+  <div class="two-col">
+    <div>
+      <div class="section-tag">Počas pôrodu</div>
+      <h2 class="section-title">Sprevádzanie<br>pri <em>pôrode</em></h2>
+      <p class="body-text">
+        Pôrod je intenzívny – ale nie musíš ním prechádzať sama. Budem pri tebe fyzicky, masírovaním, správnou polohou tela a dýchaním pomôžem zvládnuť každú vlnu. Či doma alebo v pôrodnici.
+      </p>
+      <div class="divider"></div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Príchod a orientácia</h4>
+            <p>Prídem k tebe domov alebo do pôrodnice – podľa toho, kde sa práve nachádzaš.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Fyzická podpora</h4>
+            <p>Masáže krížovej kosti, tlakové body, pomoc s polohou – priamo pri každej kontrakcii.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Emocionálna prítomnosť</h4>
+            <p>Slová podpory, uzemňovanie, dychové vedenie – si vo svojom tele v bezpečí.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Koordinácia s tímom</h4>
+            <p>Komunikujem s pôrodnými asistentkami a lekármi, aby tvoje priania boli rešpektované.</p>
+          </div>
+        </div>
+      </div>
+      <a href="index.html#kontakt" class="btn-primary">Dohovorte sa so mnou</a>
+    </div>
+    <div class="col-image">
+      <img src="/uploads/Pregnantcourse.jpg" alt="Kontrakcie">
+    </div>
+  </div>
+</section>
+
+<!-- CERRADA / REBOZO -->
+<section class="sec" id="cerrada" style="background:var(--blush)">
+  <div class="two-col reverse">
+    <div class="col-image right-deco">
+      <img src="/uploads/rebozo.jpeg" alt="Cerrada Rebozo masáž">
+    </div>
+    <div>
+      <div class="section-tag">Tradičný rituál</div>
+      <h2 class="section-title">Cerrada &<br>masáž <em>Rebozo</em></h2>
+      <p class="body-text">
+        Cerrada (španielsky „zatvorená") je mexický postnatálny rituál uzavretia ženského tela po pôrode. Pomocou tradičnej šály Rebozo sa telo jemne zavinuje, hojdá a uzatvára – symbolicky aj fyzicky.
+      </p>
+      <div class="divider"></div>
+      <p class="body-text">
+        Tento ritual pomáha telu zotaviť sa, uzatvoriť kosti a uvoľniť emocionálne napätie. Je to dar pre každú ženu, ktorá práve vydala nový život na svet.
+      </p>
+      <ul class="feature-list" style="margin-top:1.5rem">
+        <li>Fyzické uzavretie tela po pôrode – kosti, svaly, väzy</li>
+        <li>Hlboký pocit bezpečia, tepla a uzemnenia</li>
+        <li>Emocionálne spracovanie pôrodného zážitku</li>
+        <li>Vhodné 3–14 dní po pôrode</li>
+        <li>Možnosť aj kedykoľvek neskôr – nikdy nie je neskoro</li>
+      </ul>
+      <blockquote class="pull-quote" style="margin-top:1.5rem">
+        „Telo, ktoré dalo život, si zaslúži byť objímané, uzavreté a uctievané."
+      </blockquote>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem">
+        <div class="price-box">
+          <div class="price-label">Cena</div>
+          <div class="price-value">od 60 €</div>
+          <div class="price-note">Individuálne · cca 90 min</div>
+        </div>
+        <a href="index.html#kontakt" class="btn-primary" style="align-self:center">Rezervovať</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKUPINOVÁ PRÍPRAVA NA PÔROD -->
+<section class="sec" id="kurz">
+  <div class="section-tag">Kurz</div>
+  <h2 class="section-title" style="margin-bottom:0.8rem">Skupinová príprava<br>na <em>pôrod</em></h2>
+  <p class="body-text" style="max-width:580px;margin-bottom:3rem">
+    Kurz pre páry aj mamičky bez partnera – komplexná príprava na pôrod, šestonedelie a príchod bábätka. V bezpečnej skupinovej atmosfére.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start">
+    <div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;margin-bottom:1.5rem">Čo kurz obsahuje</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Fyziológia pôrodu</h4>
+            <p>Čo sa deje v tele, fázy pôrodu, čo čakať – bez strachu, s faktami.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Zvládanie bolesti</h4>
+            <p>Pohybové techniky, dýchanie, polohy, vodný pôrod – možnosti bez tlaku.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Informovaný súhlas</h4>
+            <p>Vaše práva v pôrodnici, otázky pre lekárov, ako komunikovať svoja priania.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Prvé dni s bábätkom</h4>
+            <p>Dojčenie, šestonedelie, plač dieťaťa, starostlivosť – prakticky a bez paniki.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Emocionálna príprava</h4>
+            <p>Strach, partnerský vzťah, sebadôvera – priestor pre to, čo cítite.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-image no-deco">
+        <img src="/uploads/Pregnantcourse.jpg" alt="Príprava na pôrod" style="border-radius:24px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem">
+        <div class="info-card">
+          <div class="info-card-icon">👥</div>
+          <h4>Max. 6 párov</h4>
+          <p>Intímna atmosféra, priestor na otázky a zdieľanie.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">📅</div>
+          <h4>4–5 stretnutí</h4>
+          <p>Spravidla cez víkend alebo vo večerných hodinách.</p>
+        </div>
+        <div class="info-card" style="grid-column:1/-1">
+          <div class="price-label" style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Cena za pár</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300">od 120 €</div>
+          <p style="font-size:0.82rem;color:var(--text-light);margin-top:0.3rem">Závisí od počtu stretnutí a formátu</p>
+        </div>
+      </div>
+      <a href="index.html#kontakt" class="btn-primary" style="margin-top:1.5rem">Prihlásiť sa</a>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div style="max-width:680px;margin-top:5rem">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;margin-bottom:0.5rem">Časté otázky</h3>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">Je kurz aj pre prvorodičky?<span>+</span></div>
+        <div class="faq-a">Áno, kurz je vhodný pre všetky – prvorodičky aj tie, ktoré sa chcú pripraviť inak ako pri predchádzajúcom pôrode. Každé tehotenstvo je iné.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Musí prísť aj partner?<span>+</span></div>
+        <div class="faq-a">Partner nie je povinný, ale je vítaný. Kurz navštevujú aj mamičky samy, s mamou, kamarátkou alebo doulou.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Od kedy tehotenstva je kurz vhodný?<span>+</span></div>
+        <div class="faq-a">Ideálne od 28. týždňa tehotenstva – ale aj skôr, pokiaľ cítite potrebu informácií a spoločenstva. V treťom trimestri je čas ideálny.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Kde kurz prebieha?<span>+</span></div>
+        <div class="faq-a">V príjemnom priestore v Martine, Andreja Kmeťa 577/22. Niekedy aj online formou – podľa záujmu skupiny.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Ako sa prihlásim?<span>+</span></div>
+        <div class="faq-a">Napíšte mi správu cez kontaktný formulár alebo WhatsApp. Dohodnem sa s vami na termíne a pošlem všetky informácie.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT STRIP -->
+<div class="contact-strip">
+  <div>
+    <h2>Máte otázky?<br><em>Napíšte mi</em></h2>
+    <p>Som tu pre vás – bez záväzkov, s otvoreným srdcom.</p>
+  </div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap">
+    <a href="index.html#kontakt" class="btn-primary">Kontaktovať ma</a>
+    <a href="tel:0951247995" style="color:rgba(253,250,248,0.7);text-decoration:none;font-size:0.9rem;align-self:center">0951 247 995</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Magic<span>Space</span></div>
+  <div class="footer-links">
+    <a href="index.html">Domov</a>
+    <a href="joga-park.html">Joga v parku</a>
+    <a href="soundhealing.html">Sound Healing</a>
+    <a href="firmy.html">Pre firmy</a>
+    <a href="index.html#kontakt">Kontakt</a>
+  </div>
+  <p>© 2025 MagicSpace · Martin</p>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});
+document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mainNav').classList.toggle('menu-open');});
+document.querySelectorAll('.faq-item').forEach(item=>{
+  item.addEventListener('click',()=>{item.classList.toggle('open');});
+});
+// Anchor nav highlight
+const anchors=document.querySelectorAll('.anchor-nav a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  document.querySelectorAll('section[id],div[id]').forEach(s=>{
+    if(window.scrollY>=s.offsetTop-120)cur=s.id;
+  });
+  anchors.forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+cur);
+  });
+});
+</script>
+</body>
+</html>

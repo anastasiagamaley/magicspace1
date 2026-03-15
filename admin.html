@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Magic Space</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--tl:#7a6660;--white:#fdfaf8;--gold:#b89a7a;--bg:#f8f4f1;--red:#c0504d;--green:#5a8a5a;}
+    body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);font-weight:300;min-height:100vh;}
+
+    /* ── LOGIN ── */
+    .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--rose),var(--blush));}
+    .login-box{background:var(--white);border-radius:24px;padding:3rem;width:360px;text-align:center;box-shadow:0 24px 60px rgba(58,46,42,0.12);}
+    .login-logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;margin-bottom:0.4rem;}
+    .login-logo span{color:var(--gold);}
+    .login-sub{font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--tl);margin-bottom:2rem;}
+    .login-err{color:var(--red);font-size:0.82rem;margin-top:0.6rem;display:none;}
+
+    /* ── SHARED FORM ── */
+    .fg{margin-bottom:1rem;text-align:left;}
+    .fg label{display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--tl);margin-bottom:0.35rem;}
+    .fg input,.fg select,.fg textarea{width:100%;padding:0.72rem 1rem;border:1px solid rgba(184,154,122,0.25);border-radius:10px;background:var(--rose);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+    .fg textarea{resize:vertical;min-height:80px;}
+    .btn-full{width:100%;padding:0.85rem;background:var(--gold);color:var(--white);border:none;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+    .btn-full:hover{background:#a0876a;}
+
+    /* ── LAYOUT ── */
+    .admin{display:none;}
+    .sidebar{width:230px;background:var(--text);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;}
+    .sidebar-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--white);text-align:center;padding:2rem 1.5rem 1.5rem;letter-spacing:0.05em;}
+    .sidebar-logo span{color:var(--gold);}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,0.07);margin:0 1.5rem 1rem;}
+    .sidebar-section{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(253,250,248,0.3);padding:0.5rem 1.5rem 0.3rem;}
+    .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;color:rgba(253,250,248,0.55);cursor:pointer;transition:all 0.2s;font-size:0.83rem;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{color:var(--white);background:rgba(255,255,255,0.05);}
+    .nav-item.active{color:var(--white);border-left-color:var(--gold);background:rgba(184,154,122,0.12);}
+    .nav-item .badge-dot{margin-left:auto;background:var(--gold);color:var(--white);font-size:0.65rem;padding:0.1rem 0.45rem;border-radius:50px;min-width:18px;text-align:center;}
+    .sidebar-footer{margin-top:auto;padding:1.5rem;border-top:1px solid rgba(255,255,255,0.07);}
+    .sidebar-footer a{display:block;color:rgba(253,250,248,0.4);font-size:0.78rem;text-decoration:none;margin-bottom:0.5rem;transition:color 0.2s;}
+    .sidebar-footer a:hover{color:var(--gold);}
+
+    .main{margin-left:230px;padding:2.5rem;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+    .topbar h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2rem;}
+    .topbar-actions{display:flex;gap:0.8rem;flex-wrap:wrap;}
+
+    /* ── STATS ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+    .stat-card{background:var(--white);border-radius:14px;padding:1.4rem;border:1px solid rgba(184,154,122,0.12);transition:box-shadow 0.2s;}
+    .stat-card:hover{box-shadow:0 6px 24px rgba(58,46,42,0.07);}
+    .stat-label{font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--tl);margin-bottom:0.4rem;}
+    .stat-value{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;line-height:1;}
+    .stat-sub{font-size:0.75rem;color:var(--tl);margin-top:0.3rem;}
+
+    /* ── PANELS ── */
+    .panel{display:none;}
+    .panel.active{display:block;}
+
+    /* ── CARDS & TABLES ── */
+    .card{background:var(--white);border-radius:14px;overflow:hidden;border:1px solid rgba(184,154,122,0.12);margin-bottom:1.5rem;}
+    .card-head{padding:1rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(184,154,122,0.08);}
+    .card-head h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.2rem;}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;min-width:600px;}
+    th{padding:0.65rem 1.1rem;text-align:left;font-size:0.67rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--tl);background:var(--bg);font-weight:400;white-space:nowrap;}
+    td{padding:0.85rem 1.1rem;border-top:1px solid rgba(184,154,122,0.07);font-size:0.85rem;vertical-align:middle;}
+    tr:hover td{background:rgba(245,230,224,0.2);}
+    .empty-row td{text-align:center;color:var(--tl);padding:2.5rem;font-style:italic;}
+
+    /* ── BADGES ── */
+    .bdg{display:inline-block;padding:0.2rem 0.65rem;border-radius:50px;font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;}
+    .bdg-active{background:var(--sage);color:var(--text);}
+    .bdg-full{background:#f0c8c0;color:var(--text);}
+    .bdg-cancelled{background:#e0e0e0;color:#888;}
+    .bdg-pending{background:var(--blush);color:var(--text);}
+    .bdg-confirmed{background:var(--sage);color:var(--text);}
+    .bdg-new{background:#ffe4b5;color:#7a5c00;}
+    .bdg-read{background:#eee;color:#999;}
+
+    /* ── BUTTONS ── */
+    .ab{padding:0.3rem 0.7rem;border-radius:50px;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:0.69rem;letter-spacing:0.07em;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;}
+    .ab+.ab{margin-left:0.25rem;}
+    .ab-gold{background:var(--gold);color:var(--white);}
+    .ab-gold:hover{background:#a0876a;}
+    .ab-red{background:#fce8e8;color:var(--red);}
+    .ab-red:hover{background:#f8d0d0;}
+    .ab-outline{background:transparent;border:1px solid var(--warm);color:var(--tl);}
+    .ab-outline:hover{background:var(--blush);}
+    .ab-green{background:#e8f5e8;color:var(--green);}
+    .ab-green:hover{background:#d0ead0;}
+    .ab-main{padding:0.6rem 1.3rem;background:var(--gold);color:var(--white);border:none;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.77rem;letter-spacing:0.09em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+    .ab-main:hover{background:#a0876a;}
+
+    /* ── PROGRESS ── */
+    .prog{background:var(--blush);border-radius:50px;height:5px;width:80px;display:inline-block;vertical-align:middle;margin-left:0.5rem;}
+    .prog-fill{height:100%;background:var(--gold);border-radius:50px;transition:width 0.4s;}
+
+    /* ── THUMBNAIL ── */
+    .thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--blush);background:var(--rose);display:inline-block;}
+    .thumb-placeholder{width:44px;height:44px;border-radius:8px;background:var(--rose);border:1px dashed var(--warm);display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--tl);}
+
+    /* ── IMAGE UPLOAD ZONE ── */
+    .upload-zone{border:2px dashed var(--warm);border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--rose);}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--blush);}
+    .upload-zone p{font-size:0.82rem;color:var(--tl);margin-top:0.4rem;}
+    .upload-preview{width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:0.8rem;display:none;}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;z-index:400;background:rgba(58,46,42,0.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .modal{background:var(--white);border-radius:20px;padding:2.2rem;max-width:560px;width:94%;transform:translateY(20px);transition:transform 0.3s;max-height:92vh;overflow-y:auto;position:relative;}
+    .modal-overlay.open .modal{transform:translateY(0);}
+    .modal h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.5rem;margin-bottom:1.4rem;}
+    .modal-close{position:absolute;top:1rem;right:1.2rem;background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--tl);line-height:1;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;}
+    .form-full{grid-column:1/-1;}
+    .btn-row{display:flex;gap:0.8rem;justify-content:flex-end;margin-top:1.4rem;flex-wrap:wrap;}
+
+    /* ── SETTINGS PANEL ── */
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+    .settings-card{background:var(--white);border-radius:14px;padding:1.8rem;border:1px solid rgba(184,154,122,0.12);}
+    .settings-card h3{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.2rem;margin-bottom:1.2rem;}
+    .settings-row{display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0;border-bottom:1px solid rgba(184,154,122,0.08);font-size:0.87rem;}
+    .settings-row:last-child{border-bottom:none;}
+    .settings-val{color:var(--tl);font-size:0.83rem;}
+    .tag-email{display:inline-block;background:var(--sage);padding:0.2rem 0.6rem;border-radius:6px;font-size:0.78rem;margin:0.2rem;}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:2rem;right:2rem;z-index:999;background:var(--text);color:var(--white);padding:0.85rem 1.4rem;border-radius:12px;font-size:0.85rem;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.success{background:#3a6e3a;}
+    .toast.error{background:#8e2a2a;}
+
+    /* ── MESSAGE PREVIEW ── */
+    .msg-text{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tl);font-size:0.82rem;}
+
+    @media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.settings-grid{grid-template-columns:1fr;}}
+    @media(max-width:800px){
+      .sidebar{width:56px;}
+      .sidebar-logo,.sidebar-section,.nav-item span,.nav-item .badge-dot,.sidebar-footer{display:none;}
+      .main{margin-left:56px;padding:1.2rem;}
+      .stats-grid{grid-template-columns:1fr 1fr;}
+      .form-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Magic<span>Space</span></div>
+    <p class="login-sub">Admin panel</p>
+    <div class="fg">
+      <label>Heslo</label>
+      <input type="password" id="pwInput" placeholder="••••••••" onkeyup="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-full" onclick="login()">Prihlásiť sa</button>
+    <p class="login-err" id="loginErr">Nesprávne heslo</p>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div class="admin" id="adminApp">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Magic<span>Space</span></div>
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">Prehľad</div>
+    <div class="nav-item active" onclick="showPanel('dashboard')">📊 <span>Dashboard</span></div>
+
+    <div class="sidebar-section">Sésie</div>
+    <div class="nav-item" onclick="showPanel('sessions')">🧘 <span>Hlavné sésie</span></div>
+    <div class="nav-item" onclick="showPanel('park')">🌿 <span>Joga v parku</span></div>
+
+    <div class="sidebar-section">Zákazníci</div>
+    <div class="nav-item" id="nav-bookings" onclick="showPanel('bookings')">📅 <span>Rezervácie</span></div>
+    <div class="nav-item" id="nav-contacts" onclick="showPanel('contacts')">✉️ <span>Správy</span> <span class="badge-dot" id="contactDot" style="display:none">0</span></div>
+
+    <div class="sidebar-section">Systém</div>
+    <div class="nav-item" onclick="showPanel('settings')">⚙️ <span>Nastavenia</span></div>
+
+    <div class="sidebar-footer">
+      <a href="/" target="_blank">🌐 Zobraziť web</a>
+      <a href="javascript:logout()">🚪 Odhlásiť</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="topbar">
+        <h1>Dobrý deň ✨</h1>
+        <div class="topbar-actions">
+          <button class="ab-main" onclick="showPanel('sessions');openAddSession('main')">+ Nová sésia</button>
+          <button class="ab-main" style="background:var(--text)" onclick="showPanel('park');openAddSession('park')">+ Lekcia v parku</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">Načítavam…</div><div class="stat-value">–</div></div>
+        <div class="stat-card"><div class="stat-label">…</div><div class="stat-value">–</div></div>
+        <div class="stat-card"><div class="stat-label">…</div><div class="stat-value">–</div></div>
+        <div class="stat-card"><div class="stat-label">…</div><div class="stat-value">–</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Najbližšie sésie</h2><button class="ab-main" onclick="showPanel('sessions')">Všetky →</button></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Sésia</th><th>Dátum & čas</th><th>Obsadenosť</th><th>Stav</th></tr></thead>
+          <tbody id="dashTable"><tr class="empty-row"><td colspan="4">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Posledné rezervácie</h2><button class="ab-main" onclick="showPanel('bookings')">Všetky →</button></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Meno</th><th>Sésia</th><th>Email</th><th>Stav</th></tr></thead>
+          <tbody id="dashBookings"><tr class="empty-row"><td colspan="4">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── SESSIONS ── -->
+    <div class="panel" id="panel-sessions">
+      <div class="topbar">
+        <h1>Hlavné sésie</h1>
+        <button class="ab-main" onclick="openAddSession('main')">+ Pridať sésiu</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Foto</th><th>Názov</th><th>Dátum & čas</th><th>Miesta</th><th>Cena</th><th>Stav</th><th>Akcie</th></tr></thead>
+          <tbody id="sessionsTable"><tr class="empty-row"><td colspan="7">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── PARK ── -->
+    <div class="panel" id="panel-park">
+      <div class="topbar">
+        <h1>Joga v parku 🌿</h1>
+        <button class="ab-main" onclick="openAddSession('park')">+ Pridať lekciu</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Foto</th><th>Názov</th><th>Dátum & čas</th><th>Miesta</th><th>Cena</th><th>Stav</th><th>Akcie</th></tr></thead>
+          <tbody id="parkTable"><tr class="empty-row"><td colspan="7">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── BOOKINGS ── -->
+    <div class="panel" id="panel-bookings">
+      <div class="topbar"><h1>Rezervácie</h1></div>
+      <div class="card">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Meno</th><th>Sésia</th><th>Email</th><th>Telefón</th><th>Poznámka</th><th>Dátum rezerv.</th><th>Stav</th><th>Akcie</th></tr></thead>
+          <tbody id="bookingsTable"><tr class="empty-row"><td colspan="8">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── CONTACTS ── -->
+    <div class="panel" id="panel-contacts">
+      <div class="topbar"><h1>Správy od klientov</h1></div>
+      <div class="card">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Meno</th><th>Email</th><th>Telefón</th><th>Téma</th><th>Správa</th><th>Dátum</th><th>Stav</th><th>Akcie</th></tr></thead>
+          <tbody id="contactsTable"><tr class="empty-row"><td colspan="8">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="panel" id="panel-settings">
+      <div class="topbar"><h1>Nastavenia</h1></div>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>📧 Email nastavenia</h3>
+          <div class="settings-row"><span>Admin email</span><span class="settings-val" id="setAdminEmail">–</span></div>
+          <div class="settings-row"><span>Kópie rezervácií</span><span class="tag-email" id="setAdminEmail2">–</span></div>
+          <div class="settings-row"><span>Pripomienky</span><span class="settings-val">24h pred sesiou ✓</span></div>
+          <div class="settings-row"><span>Zrušenie sésie</span><span class="settings-val">Email všetkým klientom ✓</span></div>
+          <p style="font-size:0.78rem;color:var(--tl);margin-top:1rem">
+            Pre zmenu emailu upravte <code>ADMIN_EMAIL</code> v súbore <code>app.py</code>.<br>
+            Pre Gmail je potrebné <a href="https://support.google.com/accounts/answer/185833" target="_blank" style="color:var(--gold)">App Password</a>.
+          </p>
+        </div>
+        <div class="settings-card">
+          <h3>🔐 Prístup do adminu</h3>
+          <div class="settings-row"><span>Heslo</span><span class="settings-val">Zmeňte v app.py → ADMIN_PASSWORD</span></div>
+          <div class="settings-row"><span>Autentifikácia</span><span class="settings-val">Server-side ✓</span></div>
+          <p style="font-size:0.78rem;color:var(--tl);margin-top:1rem">
+            Nájdite riadok <code>ADMIN_PASSWORD = "admin123"</code> v <code>app.py</code> a zmeňte heslo.
+          </p>
+        </div>
+        <div class="settings-card">
+          <h3>🗄 Databáza</h3>
+          <div class="settings-row" id="dbStats"><span>Načítavam…</span></div>
+          <p style="font-size:0.78rem;color:var(--tl);margin-top:1rem">
+            Súbor <code>magicspace.db</code> – SQLite databáza. Zálohujte ho pravidelne.
+          </p>
+        </div>
+        <div class="settings-card">
+          <h3>📸 Upload obrázkov</h3>
+          <p style="font-size:0.88rem;color:var(--tl);line-height:1.7">
+            Obrázky sésií môžete meniť priamo pri každej sésii cez tlačidlo <strong>Upraviť</strong>.
+            Súbory sa ukladajú do priečinka <code>/uploads/</code>.
+          </p>
+          <p style="font-size:0.78rem;color:var(--tl);margin-top:0.8rem">Povolené formáty: JPG, PNG, WebP · Max 10 MB</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── SESSION MODAL ── -->
+<div class="modal-overlay" id="sessionModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSessionModal()">×</button>
+    <h2 id="smTitle">Nová sésia</h2>
+    <div class="form-grid">
+      <div class="fg form-full"><label>Názov sésie *</label><input type="text" id="s_title" placeholder="Sound Healing"></div>
+      <div class="fg"><label>Dátum *</label><input type="date" id="s_date"></div>
+      <div class="fg"><label>Čas *</label><input type="time" id="s_time"></div>
+      <div class="fg"><label>Trvanie</label><input type="text" id="s_duration" placeholder="90 min"></div>
+      <div class="fg"><label>Cena</label><input type="text" id="s_price" placeholder="20 €"></div>
+      <div class="fg"><label>Počet miest</label><input type="number" id="s_spots" placeholder="10" min="1" max="200"></div>
+      <div class="fg"><label>Stav</label>
+        <select id="s_badge">
+          <option value="active">Aktívna</option>
+          <option value="full">Plná kapacita</option>
+          <option value="cancelled">Zrušená</option>
+        </select>
+      </div>
+      <div class="fg form-full"><label>Miesto konania</label><input type="text" id="s_location" placeholder="Andreja Kmeťa 577/22, Martin"></div>
+      <div class="fg form-full"><label>Popis</label><textarea id="s_desc" rows="3" placeholder="Krátky popis sésie…"></textarea></div>
+      <div class="fg form-full">
+        <label>Fotografia sésie</label>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imgFile').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="handleDrop(event)">
+          <div style="font-size:2rem">📸</div>
+          <p>Kliknite alebo pretiahnite obrázok sem</p>
+          <input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
+          <img id="uploadPreview" class="upload-preview">
+        </div>
+        <input type="hidden" id="s_image_url">
+        <p style="font-size:0.75rem;color:var(--tl);margin-top:0.4rem">JPG, PNG, WebP · Max 10 MB · Aktuálna URL: <span id="currentImgUrl" style="color:var(--gold)">–</span></p>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="ab ab-outline" style="padding:0.5rem 1rem" onclick="closeSessionModal()">Zrušiť</button>
+      <button class="ab-main" id="saveBtn" onclick="saveSession()">Uložiť sésiu</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/api.js"></script>
+<script>
+// ── AUTH ──────────────────────────────────────────────────────
+async function login(){
+  const pw = document.getElementById('pwInput').value;
+  const ok = await API.checkAuth(pw);
+  if(ok){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminApp').style.display='flex';
+    loadDashboard();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('pwInput').style.borderColor='var(--red)';
+    setTimeout(()=>{ document.getElementById('pwInput').style.borderColor=''; document.getElementById('loginErr').style.display='none'; }, 2000);
+  }
+}
+function logout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminApp').style.display='none';
+  document.getElementById('pwInput').value='';
+}
+
+// ── PANELS ───────────────────────────────────────────────────
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  // highlight nav
+  const map={dashboard:'📊',sessions:'🧘',park:'🌿',bookings:'📅',contacts:'✉️',settings:'⚙️'};
+  document.querySelectorAll('.nav-item').forEach(n=>{ if(n.textContent.includes(map[name])) n.classList.add('active'); });
+  // load data
+  if(name==='dashboard') loadDashboard();
+  if(name==='sessions')  loadSessions('main');
+  if(name==='park')      loadSessions('park');
+  if(name==='bookings')  loadBookings();
+  if(name==='contacts')  loadContacts();
+  if(name==='settings')  loadSettings();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function fmtDate(d){
+  if(!d||d==='-') return '–';
+  try{ return new Date(d+'T00:00:00').toLocaleDateString('sk-SK',{day:'numeric',month:'short',year:'numeric'}); }
+  catch{ return d; }
+}
+function fmtDT(d){
+  if(!d) return '–';
+  try{ const dt=new Date(d); return dt.toLocaleDateString('sk-SK',{day:'numeric',month:'short'})+' '+dt.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'}); }
+  catch{ return d; }
+}
+function badgeLbl(b){ return {active:'Aktívna',full:'Plná',cancelled:'Zrušená',pending:'Čaká',confirmed:'Potvrdená',new:'Nová',read:'Prečítaná'}[b]||b; }
+function thumb(url){
+  if(url) return `<img src="${url}" class="thumb" onerror="this.style.display='none'">`;
+  return `<div class="thumb-placeholder">🖼</div>`;
+}
+function toast(msg, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200);
+}
+function prog(booked,spots){
+  const pct=spots?Math.round(booked/spots*100):0;
+  return `${booked}/${spots}<div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard(){
+  try{
+    const [stats, bookings] = await Promise.all([API.getStats(), API.getBookings()]);
+
+    document.getElementById('statsGrid').innerHTML=`
+      <div class="stat-card"><div class="stat-label">Aktívne sésie</div><div class="stat-value">${stats.active_sessions}</div><div class="stat-sub">celkovo všetky projekty</div></div>
+      <div class="stat-card"><div class="stat-label">Rezervácie</div><div class="stat-value">${stats.total_bookings}</div><div class="stat-sub">${stats.pending_bookings} čaká na potvrdenie</div></div>
+      <div class="stat-card"><div class="stat-label">Obsadenosť</div><div class="stat-value">${stats.occupancy_pct}%</div><div class="stat-sub">priemerná</div></div>
+      <div class="stat-card"><div class="stat-label">Správy</div><div class="stat-value">${stats.total_contacts}</div><div class="stat-sub">${stats.new_contacts} nových</div></div>`;
+
+    // Badge na nav item contacts
+    if(stats.new_contacts>0){
+      document.getElementById('contactDot').style.display='';
+      document.getElementById('contactDot').textContent=stats.new_contacts;
+    }
+
+    // Upcoming sessions
+    const ses = stats.upcoming||[];
+    document.getElementById('dashTable').innerHTML = ses.length
+      ? ses.map(s=>`<tr>
+          <td>${thumb(s.image_url)}</td>
+          <td><strong>${s.title}</strong>${s.project==='park'?' 🌿':''}</td>
+          <td>${fmtDate(s.date)} · ${s.time}</td>
+          <td>${prog(s.booked,s.spots)}</td>
+          <td><span class="bdg bdg-${s.badge}">${badgeLbl(s.badge)}</span></td>
+        </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="5">Žiadne nadchádzajúce sésie</td></tr>';
+
+    // Latest bookings
+    document.getElementById('dashBookings').innerHTML = bookings.slice(0,5).map(b=>`<tr>
+      <td><strong>${b.name}</strong></td>
+      <td>${b.session_title||'–'} ${b.project==='park'?'🌿':''}</td>
+      <td><a href="mailto:${b.email}" style="color:var(--gold);text-decoration:none">${b.email}</a></td>
+      <td><span class="bdg bdg-${b.status}">${badgeLbl(b.status)}</span></td>
+    </tr>`).join('') || '<tr class="empty-row"><td colspan="4">Žiadne rezervácie</td></tr>';
+
+  } catch(e){ toast('Chyba načítania dashboardu','error'); }
+}
+
+// ── SESSIONS TABLE ────────────────────────────────────────────
+async function loadSessions(project){
+  const tbId = project==='park'?'parkTable':'sessionsTable';
+  const tbody = document.getElementById(tbId);
+  tbody.innerHTML='<tr class="empty-row"><td colspan="7">Načítavam…</td></tr>';
+  try{
+    const sessions = await API.getSessions(project);
+    tbody.innerHTML = sessions.map(s=>`<tr>
+      <td>${thumb(s.image_url)}</td>
+      <td><strong>${s.title}</strong><br><small style="color:var(--tl)">${s.location||''}</small></td>
+      <td>${fmtDate(s.date)}<br><small style="color:var(--tl)">${s.time} · ${s.duration}</small></td>
+      <td>${prog(s.booked,s.spots)}</td>
+      <td>${s.price}</td>
+      <td><span class="bdg bdg-${s.badge}">${badgeLbl(s.badge)}</span></td>
+      <td>
+        <button class="ab ab-outline" onclick="editSession(${s.id},'${project}')">Upraviť</button>
+        <button class="ab ${s.badge==='cancelled'?'ab-green':'ab-outline'}" onclick="cancelSessionAPI(${s.id},'${project}')">${s.badge==='cancelled'?'Obnoviť':'Zrušiť'}</button>
+        <button class="ab ab-red" onclick="deleteSessionAPI(${s.id},'${project}')">Zmazať</button>
+      </td>
+    </tr>`).join('') || '<tr class="empty-row"><td colspan="7">Žiadne sésie</td></tr>';
+  } catch(e){ toast('Chyba načítania sésií','error'); }
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────
+async function loadBookings(){
+  const tbody=document.getElementById('bookingsTable');
+  tbody.innerHTML='<tr class="empty-row"><td colspan="8">Načítavam…</td></tr>';
+  try{
+    const bookings=await API.getBookings();
+    tbody.innerHTML=bookings.map(b=>`<tr>
+      <td><strong>${b.name}</strong></td>
+      <td>${b.session_title||'–'} ${b.project==='park'?'🌿':''}<br><small style="color:var(--tl)">${b.session_date?fmtDate(b.session_date):''} ${b.session_time||''}</small></td>
+      <td><a href="mailto:${b.email}" style="color:var(--gold);text-decoration:none">${b.email}</a></td>
+      <td>${b.phone||'–'}</td>
+      <td class="msg-text" title="${b.note||''}">${b.note||'–'}</td>
+      <td><small>${fmtDT(b.created_at)}</small></td>
+      <td><span class="bdg bdg-${b.status}">${badgeLbl(b.status)}</span></td>
+      <td>
+        ${b.status!=='confirmed'?`<button class="ab ab-green" onclick="confirmBookingAPI(${b.id})">✓ Potvrdiť</button>`:''}
+        <button class="ab ab-red" onclick="deleteBookingAPI(${b.id})">Zrušiť</button>
+      </td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="8">Žiadne rezervácie</td></tr>';
+  } catch(e){ toast('Chyba načítania rezervácií','error'); }
+}
+async function confirmBookingAPI(id){ await API.confirmBooking(id); toast('Rezervácia potvrdená ✓','success'); loadBookings(); loadDashboard(); }
+async function deleteBookingAPI(id){ if(!confirm('Zrušiť a vymazať túto rezerváciu?')) return; await API.deleteBooking(id); toast('Rezervácia zmazaná'); loadBookings(); loadDashboard(); }
+
+// ── CONTACTS ──────────────────────────────────────────────────
+async function loadContacts(){
+  const tbody=document.getElementById('contactsTable');
+  tbody.innerHTML='<tr class="empty-row"><td colspan="8">Načítavam…</td></tr>';
+  try{
+    const contacts=await API.getContacts();
+    tbody.innerHTML=contacts.map(c=>`<tr style="${c.status==='new'?'background:rgba(255,228,181,0.15)':''}">
+      <td><strong>${c.name}</strong></td>
+      <td><a href="mailto:${c.email}" style="color:var(--gold);text-decoration:none">${c.email}</a></td>
+      <td>${c.phone||'–'}</td>
+      <td>${c.topic||'–'}</td>
+      <td class="msg-text" title="${c.message||''}">${c.message||'–'}</td>
+      <td><small>${fmtDT(c.created_at)}</small></td>
+      <td><span class="bdg bdg-${c.status}">${badgeLbl(c.status)}</span></td>
+      <td>
+        <a href="mailto:${c.email}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>
+        ${c.status==='new'?`<button class="ab ab-outline" onclick="markReadAPI(${c.id})">Prečítané</button>`:''}
+        <button class="ab ab-red" onclick="deleteContactAPI(${c.id})">Zmazať</button>
+      </td>
+    </tr>`).join('')||'<tr class="empty-row"><td colspan="8">Žiadne správy</td></tr>';
+  } catch(e){ toast('Chyba načítania správ','error'); }
+}
+async function markReadAPI(id){ await API.markContactRead(id); loadContacts(); loadDashboard(); }
+async function deleteContactAPI(id){ if(!confirm('Zmazať správu?')) return; await API.deleteContact(id); toast('Zmazané'); loadContacts(); loadDashboard(); }
+
+// ── SETTINGS ──────────────────────────────────────────────────
+async function loadSettings(){
+  try{
+    const stats=await API.getStats();
+    document.getElementById('setAdminEmail').textContent='anastasiagamaley@gmail.com';
+    document.getElementById('setAdminEmail2').textContent='anastasiagamaley@gmail.com';
+    document.getElementById('dbStats').innerHTML=`
+      <span>Sésie: ${stats.active_sessions} aktívnych</span>
+      <span class="settings-val">Rezervácie: ${stats.total_bookings} · Správy: ${stats.total_contacts}</span>`;
+  } catch(e){}
+}
+
+// ── SESSION CRUD ──────────────────────────────────────────────
+let editingId=null, editingProject='main';
+
+function openAddSession(project='main'){
+  editingId=null; editingProject=project;
+  document.getElementById('smTitle').textContent = project==='park'?'Nová lekcia v parku':'Nová sésia';
+  ['title','duration','price','desc'].forEach(f=>document.getElementById('s_'+f).value='');
+  document.getElementById('s_date').value='';
+  document.getElementById('s_time').value='';
+  document.getElementById('s_spots').value='';
+  document.getElementById('s_badge').value='active';
+  document.getElementById('s_location').value= project==='park'?'Park pri Kotline, Martin':'Andreja Kmeťa 577/22, Martin';
+  document.getElementById('s_image_url').value='';
+  document.getElementById('currentImgUrl').textContent='–';
+  document.getElementById('uploadPreview').style.display='none';
+  document.getElementById('uploadPreview').src='';
+  document.getElementById('sessionModal').classList.add('open');
+}
+
+async function editSession(id, project='main'){
+  editingId=id; editingProject=project;
+  document.getElementById('smTitle').textContent='Upraviť sésiu';
+  try{
+    const sessions=await API.getSessions(project);
+    const s=sessions.find(x=>x.id===id); if(!s) return;
+    document.getElementById('s_title').value=s.title;
+    document.getElementById('s_date').value=s.date;
+    document.getElementById('s_time').value=s.time;
+    document.getElementById('s_duration').value=s.duration;
+    document.getElementById('s_price').value=s.price;
+    document.getElementById('s_spots').value=s.spots;
+    document.getElementById('s_badge').value=s.badge;
+    document.getElementById('s_location').value=s.location||'';
+    document.getElementById('s_desc').value=s.desc||'';
+    document.getElementById('s_image_url').value=s.image_url||'';
+    const imgEl=document.getElementById('uploadPreview');
+    if(s.image_url){ imgEl.src=s.image_url; imgEl.style.display='block'; document.getElementById('currentImgUrl').textContent=s.image_url; }
+    else { imgEl.style.display='none'; document.getElementById('currentImgUrl').textContent='–'; }
+    document.getElementById('sessionModal').classList.add('open');
+  } catch(e){ toast('Chyba načítania','error'); }
+}
+
+async function saveSession(){
+  const data={
+    title:    document.getElementById('s_title').value.trim(),
+    date:     document.getElementById('s_date').value,
+    time:     document.getElementById('s_time').value,
+    duration: document.getElementById('s_duration').value||'60 min',
+    price:    document.getElementById('s_price').value||'0 €',
+    spots:    parseInt(document.getElementById('s_spots').value)||10,
+    badge:    document.getElementById('s_badge').value,
+    location: document.getElementById('s_location').value,
+    desc:     document.getElementById('s_desc').value,
+    project:  editingProject,
+    image_url:document.getElementById('s_image_url').value,
+  };
+  if(!data.title||!data.date||!data.time){ toast('Vyplňte názov, dátum a čas','error'); return; }
+  const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Ukladám…';
+  try{
+    if(editingId) await API.updateSession(editingId,data);
+    else          await API.createSession(data);
+    closeSessionModal();
+    toast(editingId?'Sésia uložená ✓':'Sésia pridaná ✓','success');
+    editingProject==='park'?loadSessions('park'):loadSessions('main');
+    loadDashboard();
+  } catch(e){ toast('Chyba ukladania','error'); }
+  btn.disabled=false; btn.textContent='Uložiť sésiu';
+}
+
+async function cancelSessionAPI(id, project){
+  const msg = 'Zrušiť sésiu? Klienti dostanú email o zrušení.';
+  if(!confirm(msg)) return;
+  await API.cancelSession(id);
+  toast('Stav sésie zmenený – klienti boli upozornení','success');
+  loadSessions(project); loadDashboard();
+}
+
+async function deleteSessionAPI(id, project){
+  if(!confirm('Naozaj natrvalo odstrániť túto sésiu?')) return;
+  await API.deleteSession(id);
+  toast('Sésia odstránená');
+  loadSessions(project); loadDashboard();
+}
+
+function closeSessionModal(){
+  document.getElementById('sessionModal').classList.remove('open');
+}
+document.getElementById('sessionModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeSessionModal(); });
+
+// ── IMAGE UPLOAD ──────────────────────────────────────────────
+function handleFileSelect(input){
+  if(input.files&&input.files[0]) uploadImage(input.files[0]);
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file) uploadImage(file);
+}
+async function uploadImage(file){
+  const zone=document.getElementById('uploadZone');
+  zone.innerHTML='<div style="font-size:1.5rem">⏳</div><p>Nahrávam…</p>';
+  try{
+    const result=await API.uploadImage(file);
+    document.getElementById('s_image_url').value=result.url;
+    document.getElementById('currentImgUrl').textContent=result.url;
+    const prev=document.getElementById('uploadPreview');
+    prev.src=result.url; prev.style.display='block';
+    zone.innerHTML=`<div style="font-size:1.5rem">✅</div><p>Obrázok nahraný</p><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)"><img id="uploadPreview" class="upload-preview" src="${result.url}" style="display:block">`;
+    toast('Obrázok nahraný ✓','success');
+  } catch(e){
+    zone.innerHTML='<div style="font-size:2rem">📸</div><p>Kliknite alebo pretiahnite obrázok sem</p><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)"><img id="uploadPreview" class="upload-preview">';
+    toast(e.message||'Chyba uploadu','error');
+  }
+}
+</script>
+</body>
+</html>

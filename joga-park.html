@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joga v parku Martin | Magic Space</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green:#d6e5d0;--green-dark:#8fa888;--rose:#f5e6e0;--warm:#d4b9a8;--text:#2a3328;--text-light:#5a6e5a;--white:#f8fcf6;--gold:#7a9e6e;--white2:#fdfaf8; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Jost',sans-serif;background:var(--white);color:var(--text);font-weight:300;overflow-x:hidden; }
+
+    nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 3rem;background:rgba(248,252,246,0.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(122,158,110,0.15);transition:padding 0.3s; }
+    nav.scrolled { padding:0.85rem 3rem; }
+    .nav-logo { font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;letter-spacing:0.08em;color:var(--text);text-decoration:none; }
+    .nav-logo span { color:var(--gold); }
+    .nav-links { display:flex;gap:1.8rem;list-style:none;align-items:center; }
+    .nav-links a { text-decoration:none;color:var(--text-light);font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s; }
+    .nav-links a:hover { color:var(--gold); }
+    .nav-cta { background:var(--gold);color:var(--white);padding:0.58rem 1.35rem;border-radius:50px;text-decoration:none;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s; }
+    .nav-cta:hover { background:#5a7e4e; }
+    .hamburger { display:none;background:none;border:none;cursor:pointer; }
+    .hamburger span { display:block;width:22px;height:1.5px;background:var(--text);margin:5px 0; }
+
+    /* HERO */
+    .hero { min-height:100vh;position:relative;display:flex;align-items:center;overflow:hidden; }
+    .hero-bg { position:absolute;inset:0;background:linear-gradient(135deg,var(--green) 0%,#e8f0e4 50%,var(--white) 100%); }
+    .hero-content { position:relative;z-index:2;padding:8rem 5vw 4rem;max-width:700px; }
+    .hero-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.8rem; }
+    .hero-tag::before { content:'';width:28px;height:1px;background:var(--gold); }
+    .hero h1 { font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,6vw,5rem);font-weight:300;line-height:1.1;margin-bottom:1.8rem; }
+    .hero h1 em { font-style:italic;color:var(--gold); }
+    .hero-body { font-size:0.95rem;line-height:1.9;color:var(--text-light);max-width:480px;margin-bottom:2.5rem; }
+    .hero-btns { display:flex;gap:1rem;flex-wrap:wrap; }
+
+    .hero-deco { position:absolute;right:0;top:0;bottom:0;width:50%;overflow:hidden; }
+    .hero-deco img { width:100%;height:100%;object-fit:cover;filter:brightness(0.85) saturate(0.85); }
+    .hero-deco::before { content:'';position:absolute;inset:0;background:linear-gradient(to right,var(--white) 0%,transparent 40%);z-index:1; }
+
+    .btn-primary { background:var(--gold);color:var(--white);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-primary:hover { background:#5a7e4e;transform:translateY(-2px); }
+    .btn-outline { background:transparent;color:var(--gold);border:1px solid var(--gold);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
+    .btn-outline:hover { background:var(--gold);color:var(--white); }
+
+    .sec { padding:6rem 5vw; }
+    .section-tag { font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.7rem; }
+    .section-tag::before { content:'';width:24px;height:1px;background:var(--gold); }
+    .section-title { font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,3.2vw,2.8rem);font-weight:300;line-height:1.2;margin-bottom:1.4rem; }
+    .section-title em { font-style:italic;color:var(--gold); }
+    .body-text { font-size:0.93rem;line-height:1.9;color:var(--text-light); }
+
+    /* INFO BAND */
+    .info-band { background:var(--green);padding:2.5rem 5vw;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:2rem; }
+    .info-item { text-align:center; }
+    .info-icon { font-size:1.6rem;margin-bottom:0.5rem; }
+    .info-label { font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.2rem; }
+    .info-val { font-family:'Cormorant Garamond',serif;font-size:1.1rem; }
+
+    /* SESSIONS */
+    .sessions-bg { background:var(--green); }
+    .sessions-top { display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:3rem; }
+    .sessions-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.4rem; }
+    .session-card { background:var(--white2);border-radius:16px;padding:1.7rem;border:1px solid rgba(122,158,110,0.2);transition:transform 0.3s,box-shadow 0.3s; }
+    .session-card:hover { transform:translateY(-4px);box-shadow:0 14px 36px rgba(42,51,40,0.08); }
+    .session-badge { display:inline-block;background:var(--green-dark);color:var(--white);font-size:0.63rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.28rem 0.75rem;border-radius:50px;margin-bottom:0.9rem; }
+    .session-badge.full { background:#c8a890; }
+    .session-badge.cancelled { background:#c0c0c0;color:#666; }
+    .session-card h3 { font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;margin-bottom:0.4rem; }
+    .session-meta { display:flex;gap:1rem;margin:0.7rem 0;font-size:0.79rem;color:var(--text-light);flex-wrap:wrap; }
+    .session-desc { font-size:0.83rem;color:var(--text-light);line-height:1.7;margin-bottom:1.2rem; }
+    .btn-book { display:block;text-align:center;background:var(--gold);color:var(--white);padding:0.7rem 1.5rem;border-radius:50px;font-size:0.76rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s;border:none;cursor:pointer;width:100%;font-family:'Jost',sans-serif; }
+    .btn-book:hover { background:#5a7e4e; }
+    .btn-book:disabled { background:#aaa;cursor:not-allowed; }
+
+    /* ABOUT SECTION */
+    .two-col { display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center; }
+    .col-image { position:relative; }
+    .col-image img { width:100%;border-radius:24px;filter:brightness(0.93) saturate(0.88);position:relative;z-index:1; }
+    .col-image::before { content:'';position:absolute;top:-16px;left:-16px;right:16px;bottom:16px;border:1px solid rgba(122,158,110,0.3);border-radius:24px; }
+
+    .feature-list { list-style:none;margin:1.5rem 0; }
+    .feature-list li { display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.85rem;font-size:0.9rem;color:var(--text-light);line-height:1.6; }
+    .feature-list li::before { content:'🌿';font-size:0.75rem;margin-top:0.2rem;flex-shrink:0; }
+
+    .pull-quote { font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--gold);line-height:1.7;padding:1.6rem 2rem;border-left:3px solid var(--green-dark);background:var(--green);border-radius:0 16px 16px 0;margin:2rem 0; }
+
+    /* MAP STRIP */
+    .map-strip { background:var(--text);color:var(--white);padding:3.5rem 5vw;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap; }
+    .map-strip h2 { font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300; }
+    .map-strip h2 em { color:var(--gold);font-style:italic; }
+    .map-strip p { color:rgba(248,252,246,0.6);margin-top:0.4rem;font-size:0.88rem; }
+
+    /* MODAL */
+    .modal-overlay { position:fixed;inset:0;z-index:200;background:rgba(42,51,40,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s; }
+    .modal-overlay.open { opacity:1;pointer-events:all; }
+    .modal { background:var(--white2);border-radius:24px;padding:2.5rem;max-width:480px;width:90%;transform:translateY(20px);transition:transform 0.3s;max-height:90vh;overflow-y:auto;position:relative; }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal h2 { font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:300;margin-bottom:0.4rem; }
+    .modal-close { position:absolute;top:1rem;right:1.2rem;background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--text-light);line-height:1; }
+    .fg { margin-bottom:1.1rem; }
+    .fg label { display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.35rem; }
+    .fg input,.fg textarea { width:100%;padding:0.72rem 1rem;border:1px solid rgba(122,158,110,0.25);border-radius:10px;background:var(--green);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);outline:none;transition:border-color 0.2s; }
+    .fg input:focus,.fg textarea:focus { border-color:var(--gold); }
+    .fg textarea { resize:vertical;min-height:80px; }
+    .form-success { display:none;margin-top:0.8rem;padding:0.9rem;background:var(--green);border-radius:10px;font-size:0.85rem;text-align:center; }
+
+    footer { background:var(--text);color:rgba(248,252,246,0.55);padding:2rem 5vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem; }
+    .footer-logo { font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--white); }
+    .footer-logo span { color:var(--gold); }
+    footer a { color:rgba(248,252,246,0.55);text-decoration:none;font-size:0.78rem;transition:color 0.2s; }
+    footer a:hover { color:var(--gold); }
+    .footer-links { display:flex;gap:1.8rem;flex-wrap:wrap; }
+
+    @media(max-width:900px){
+      nav{padding:1.1rem 1.5rem;}
+      .nav-links,.nav-cta{display:none;}
+      .hamburger{display:block;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-cta{display:block;}
+      .hero-deco{display:none;}
+      .hero-content{padding-top:6rem;}
+      .sec{padding:4rem 1.5rem;}
+      .two-col{grid-template-columns:1fr;gap:2rem;}
+      .map-strip{flex-direction:column;text-align:center;}
+    }
+  </style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a href="joga-park.html" class="nav-logo">Joga v <span>Parku</span></a>
+  <ul class="nav-links">
+    <li><a href="#o-projekte">O projekte</a></li>
+    <li><a href="#lekcie">Lekcie</a></li>
+    <li><a href="#kde">Kde a kedy</a></li>
+    <li><a href="index.html" style="color:var(--gold)">← MagicSpace</a></li>
+  </ul>
+  <a href="#lekcie" class="nav-cta">Rezervovať</a>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Letný projekt · Martin</div>
+    <h1>Joga<br>v <em>parku</em></h1>
+    <p class="hero-body">Zabudnite na štyri steny. Joga pod otvoreným nebom, v tieni stromov, s vtákmi namiesto hudby. Pre každého, kto hľadá pohyb, dych a ticho.</p>
+    <div class="hero-btns">
+      <a href="#lekcie" class="btn-primary">Pozrieť lekcie</a>
+      <a href="#o-projekte" class="btn-outline">O projekte</a>
+    </div>
+  </div>
+  <div class="hero-deco">
+    <img src="/uploads/yoga_park.png" alt="Joga v parku">
+  </div>
+</section>
+
+<!-- INFO BAND -->
+<div class="info-band">
+  <div class="info-item"><div class="info-icon">📍</div><div class="info-label">Miesto</div><div class="info-val">Park pri Kotline, Martin</div></div>
+  <div class="info-item"><div class="info-icon">📅</div><div class="info-label">Termíny</div><div class="info-val">Jún – September</div></div>
+  <div class="info-item"><div class="info-icon">🕐</div><div class="info-label">Čas</div><div class="info-val">Stredy 7:00 & 18:00</div></div>
+  <div class="info-item"><div class="info-icon">💰</div><div class="info-label">Cena</div><div class="info-val">Bezplatne / dobrovoľný príspevok</div></div>
+  <div class="info-item"><div class="info-icon">🧘</div><div class="info-label">Pre koho</div><div class="info-val">Úplne každý</div></div>
+</div>
+
+<!-- O PROJEKTE -->
+<section class="sec" id="o-projekte">
+  <div class="two-col">
+    <div>
+      <div class="section-tag">Projekt</div>
+      <h2 class="section-title">Joga pre<br><em>každého</em></h2>
+      <p class="body-text">Joga v parku je samostatný letný projekt – dostupná, ľahká a radostná joga pre všetkých, ktorí chcú začať alebo si len dopriať pohyb v prírode.</p>
+      <blockquote class="pull-quote">„Pod otvoreným nebom sa dýcha inak – a to, čo cítite, keď skončíte, je presne to, prečo to robíme."</blockquote>
+      <ul class="feature-list">
+        <li>Vhodné pre úplných začiatočníkov aj skúsených praktikantov</li>
+        <li>Hatha joga, strečing, dychové cvičenia</li>
+        <li>Žiadne predchádzajúce skúsenosti nie sú potrebné</li>
+        <li>Prinesie vlastnú podložku (alebo si požičajte)</li>
+        <li>V prípade zlého počasia – presun do sálu</li>
+      </ul>
+    </div>
+    <div class="col-image">
+      <img src="/uploads/yoga_park.png" alt="Joga v parku">
+    </div>
+  </div>
+</section>
+
+<!-- LEKCIE / SESSIONS -->
+<section class="sec sessions-bg" id="lekcie">
+  <div class="sessions-top">
+    <div>
+      <div class="section-tag">Rezervácie</div>
+      <h2 class="section-title">Najbližšie <em>lekcie</em></h2>
+      <p style="color:var(--text-light);font-size:0.9rem;line-height:1.8;max-width:480px;margin-top:0.5rem">Rezervujte si miesto vopred – lekcie sú obmedzené na max. 20 osôb.</p>
+    </div>
+  </div>
+  <div class="sessions-grid" id="parkSessionsGrid"></div>
+</section>
+
+<!-- KDE -->
+<section class="sec" id="kde" style="background:var(--white2)">
+  <div class="section-tag">Miesto</div>
+  <h2 class="section-title">Kde nás<br><em>nájdete</em></h2>
+  <p class="body-text" style="margin-bottom:2rem">Stretneme sa pri vstupe do parku pri Kotline v Martine. Príďte 5 minút pred začiatkom, prinesie podložku a vodu.</p>
+  <div style="background:var(--green);border-radius:20px;padding:2rem;display:inline-flex;gap:2rem;flex-wrap:wrap;align-items:center">
+    <div>
+      <div class="section-tag" style="margin-bottom:0.4rem">Adresa</div>
+      <p style="font-size:0.9rem">Park pri Kotline, Martin<br><span style="color:var(--text-light);font-size:0.82rem">Parkovisko pri fontáne</span></p>
+    </div>
+    <div>
+      <div class="section-tag" style="margin-bottom:0.4rem">Čas stretnutia</div>
+      <p style="font-size:0.9rem">Stredy 7:00 (ráno)<br>Stredy 18:00 (večer)</p>
+    </div>
+    <div>
+      <div class="section-tag" style="margin-bottom:0.4rem">Čo priniesť</div>
+      <p style="font-size:0.9rem">Podložka, voda, pohodlné oblečenie</p>
+    </div>
+  </div>
+</section>
+
+<div class="map-strip">
+  <div>
+    <h2>Otázky?<br><em>Napíšte mi</em></h2>
+    <p>info@magicspace.sk · 0951 247 995</p>
+  </div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap">
+    <a href="index.html#kontakt" class="btn-primary" style="background:var(--white);color:var(--text)">Kontakt</a>
+    <a href="index.html" style="color:rgba(248,252,246,0.7);text-decoration:none;font-size:0.88rem;align-self:center">← Späť na MagicSpace</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Joga v <span>Parku</span></div>
+  <div class="footer-links">
+    <a href="#o-projekte">O projekte</a>
+    <a href="#lekcie">Lekcie</a>
+    <a href="#kde">Kde</a>
+    <a href="index.html">MagicSpace</a>
+  </div>
+  <p>© 2025 MagicSpace · Martin</p>
+</footer>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Rezervácia lekcie</h2>
+    <p id="modalMeta" style="color:var(--text-light);font-size:0.85rem;margin-bottom:1.4rem"></p>
+    <form onsubmit="submitBooking(event)">
+      <div class="fg"><label>Meno a priezvisko</label><input type="text" required id="bName" placeholder="Jana Nováková"></div>
+      <div class="fg"><label>E-mail</label><input type="email" required id="bEmail" placeholder="jana@email.sk"></div>
+      <div class="fg"><label>Telefón</label><input type="tel" required id="bPhone" placeholder="09xx xxx xxx"></div>
+      <div class="fg"><label>Poznámka</label><textarea id="bNote" placeholder="Prvýkrát? Nejaké zranenia?…"></textarea></div>
+      <button type="submit" class="btn-book">Potvrdiť miesto</button>
+      <div class="form-success" id="bookSuccess">🌿 Rezervácia odoslaná! Tešíme sa na vás.</div>
+    </form>
+  </div>
+</div>
+
+<script src="/api.js"></script>
+<script>
+async function renderParkSessions() {
+  const grid = document.getElementById('parkSessionsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<p style="color:var(--text-light);padding:1rem">Načítavam lekcie…</p>';
+  try {
+    const sessions = await API.getSessions('park');
+    if (!sessions.length) { grid.innerHTML = '<p style="color:var(--text-light)">Momentálne žiadne lekcie. Sledujte nás na Instagrame.</p>'; return; }
+    grid.innerHTML = sessions.map(s => {
+      const isFull = s.booked >= s.spots || s.badge === 'full';
+      const isCan  = s.badge === 'cancelled';
+      const df = new Date(s.date).toLocaleDateString('sk-SK', {day:'numeric', month:'long', year:'numeric'});
+      const left = s.spots - s.booked;
+      return `<div class="session-card">
+        <span class="session-badge ${isFull?'full':''} ${isCan?'cancelled':''}">${isCan?'Zrušené':isFull?'Plná kapacita':left+' voľných miest'}</span>
+        <h3>${s.title}</h3>
+        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${s.time}</span></div>
+        <div class="session-meta"><span>⏱ ${s.duration}</span><span>💰 ${s.price}</span></div>
+        <p class="session-desc">${s.desc}</p>
+        <button class="btn-book" ${isFull||isCan?'disabled':''} onclick="openBooking(${s.id})">${isCan?'Zrušené':isFull?'Plná kapacita':'Rezervovať miesto'}</button>
+      </div>`;
+    }).join('');
+  } catch(e) { grid.innerHTML = '<p style="color:var(--text-light)">Chyba načítania lekcií.</p>'; }
+}
+
+let aId = null;
+function openBooking(id) {
+  aId = id;
+  document.getElementById('bookSuccess').style.display = 'none';
+  document.getElementById('bookingModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  API.getSessions('park').then(sessions => {
+    const s = sessions.find(x => x.id === id);
+    if (s) {
+      document.getElementById('modalTitle').textContent = s.title;
+      document.getElementById('modalMeta').textContent = `📅 ${new Date(s.date).toLocaleDateString('sk-SK',{day:'numeric',month:'long'})}  ·  🕐 ${s.time}  ·  📍 Park pri Kotline`;
+    }
+  });
+}
+function closeModal() { document.getElementById('bookingModal').classList.remove('open'); document.body.style.overflow=''; }
+document.getElementById('bookingModal').addEventListener('click', e => { if (e.target===e.currentTarget) closeModal(); });
+
+async function submitBooking(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled=true; btn.textContent='Odosielam…';
+  try {
+    await API.createBooking({
+      session_id: aId,
+      name:  document.getElementById('bName').value,
+      email: document.getElementById('bEmail').value,
+      phone: document.getElementById('bPhone').value,
+      note:  document.getElementById('bNote').value,
+    });
+    document.getElementById('bookSuccess').style.display='block';
+    setTimeout(()=>{ closeModal(); renderParkSessions(); e.target.reset(); btn.disabled=false; btn.textContent='Potvrdiť miesto'; }, 2600);
+  } catch(err) { alert(err.message); btn.disabled=false; btn.textContent='Potvrdiť miesto'; }
+}
+
+window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});
+document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mainNav').classList.toggle('menu-open');});
+renderParkSessions();
+</script>
+</body>
+</html>
