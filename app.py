@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 import atexit
 
 BASE    = os.path.dirname(os.path.abspath(__file__))
@@ -17,15 +18,19 @@ DB      = os.path.join(BASE, "magicspace.db")
 UPLOADS = os.path.join(BASE, "uploads")
 os.makedirs(UPLOADS, exist_ok=True)
 
+# Načítať .env súbor
+load_dotenv(os.path.join(BASE, ".env"))
+
 app = Flask(__name__, static_folder=BASE, static_url_path="")
 
 # ════════════════════════════════════════════════════════════════
-# NASTAVENIA – ZMEŇTE TIETO HODNOTY
+# NASTAVENIA – upravujte v súbore .env, nie tu!
 # ════════════════════════════════════════════════════════════════
-ADMIN_EMAIL    = "anastasiagamaley@gmail.com"   # váš email
-GMAIL_USER     = "anastasiagamaley@gmail.com"   # Gmail odosielateľ
-GMAIL_PASS     = "bobz gimd mvcj asop"          # App Password (nie heslo do Gmailu!)
-ADMIN_PASSWORD = "admin123"                      # heslo do adminpanelu
+ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL",    "")
+GMAIL_USER     = os.getenv("GMAIL_USER",     "")
+GMAIL_PASS     = os.getenv("GMAIL_PASS",     "")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+SITE_URL       = os.getenv("SITE_URL",       "http://localhost:5000")
 # ════════════════════════════════════════════════════════════════
 
 # ─── DATABÁZA ────────────────────────────────────────────────
@@ -109,10 +114,10 @@ def init_db():
                  "Andreja Kmeťa 577/22, Martin","active","main"),
                 ("Ranná joga v parku","2025-06-04","07:00","60 min",20,8,"8 €",
                  "Ideálny začiatok dňa. Ráno v parku, čerstvý vzduch.",
-                 "Park pri Kotline, Martin","active","park"),
+                 "Schody pred Múzeom, Martin","active","park"),
                 ("Večerná joga v parku","2025-06-04","18:00","60 min",20,12,"8 €",
                  "Uzavrite pracovný deň pohybom v prírode.",
-                 "Park pri Kotline, Martin","active","park"),
+                 "Schody pred Múzeom, Martin","active","park"),
             ])
             db.commit()
 
@@ -179,7 +184,7 @@ def email_booking_admin(booking, session):
           <tr><td style="padding:0.4rem 0;color:#7a6660">Poznámka</td><td>{booking.get("note","–")}</td></tr>
         </table>
         <div style="margin-top:1.5rem">
-          <a href="http://localhost:5000/admin.html" style="background:#b89a7a;color:#fff;padding:0.7rem 1.5rem;border-radius:50px;text-decoration:none;font-size:0.85rem">Otvoriť admin →</a>
+          <a href="{SITE_URL}/admin.html" style="background:#b89a7a;color:#fff;padding:0.7rem 1.5rem;border-radius:50px;text-decoration:none;font-size:0.85rem">Otvoriť admin →</a>
         </div>
       </div>
     </div>"""
@@ -532,9 +537,11 @@ def stats():
         "upcoming":         [dict(r) for r in upcoming],
     })
 
+# Inicializácia DB pri štarte (funguje aj s Gunicorn/WSGI)
+init_db()
+
 # ─── SPUSTENIE ───────────────────────────────────────────────
 if __name__ == "__main__":
-    init_db()
     print("\n✨ MagicSpace server beží!")
     print("   Web:   http://localhost:5000")
     print("   Admin: http://localhost:5000/admin.html")
@@ -544,4 +551,8 @@ if __name__ == "__main__":
         print("   ⚠️  GMAIL_PASS nie je nastavené – emaily nebudú fungovať")
         print("   → Návod: https://support.google.com/accounts/answer/185833")
     print("\n   Zastavte: Ctrl+C\n")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(
+        debug=os.getenv("FLASK_DEBUG", "0") == "1",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000))
+    )

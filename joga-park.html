@@ -159,7 +159,7 @@
 
 <!-- INFO BAND -->
 <div class="info-band">
-  <div class="info-item"><div class="info-icon">📍</div><div class="info-label">Miesto</div><div class="info-val">Park pri Kotline, Martin</div></div>
+  <div class="info-item"><div class="info-icon">📍</div><div class="info-label">Miesto</div><div class="info-val">Schody pred Múzeom, Martin</div></div>
   <div class="info-item"><div class="info-icon">📅</div><div class="info-label">Termíny</div><div class="info-val">Jún – September</div></div>
   <div class="info-item"><div class="info-icon">🕐</div><div class="info-label">Čas</div><div class="info-val">Stredy 7:00 & 18:00</div></div>
   <div class="info-item"><div class="info-icon">💰</div><div class="info-label">Cena</div><div class="info-val">Bezplatne / dobrovoľný príspevok</div></div>
@@ -204,11 +204,11 @@
 <section class="sec" id="kde" style="background:var(--white2)">
   <div class="section-tag">Miesto</div>
   <h2 class="section-title">Kde nás<br><em>nájdete</em></h2>
-  <p class="body-text" style="margin-bottom:2rem">Stretneme sa pri vstupe do parku pri Kotline v Martine. Príďte 5 minút pred začiatkom, prinesie podložku a vodu.</p>
+  <p class="body-text" style="margin-bottom:2rem">Stretneme sa na schodoch pred Múzeom v Martine. Príďte 5 minút pred začiatkom, prinesie podložku a vodu.</p>
   <div style="background:var(--green);border-radius:20px;padding:2rem;display:inline-flex;gap:2rem;flex-wrap:wrap;align-items:center">
     <div>
       <div class="section-tag" style="margin-bottom:0.4rem">Adresa</div>
-      <p style="font-size:0.9rem">Park pri Kotline, Martin<br><span style="color:var(--text-light);font-size:0.82rem">Parkovisko pri fontáne</span></p>
+      <p style="font-size:0.9rem">Schody pred Múzeom, Martin<br><span style="color:var(--text-light);font-size:0.82rem">Schody pred Slovenským múzeom prírody</span></p>
     </div>
     <div>
       <div class="section-tag" style="margin-bottom:0.4rem">Čas stretnutia</div>
@@ -239,6 +239,7 @@
     <a href="#lekcie">Lekcie</a>
     <a href="#kde">Kde</a>
     <a href="index.html">MagicSpace</a>
+    <a href="privacy.html">Ochrana údajov</a>
   </div>
   <p>© 2025 MagicSpace · Martin</p>
 </footer>
@@ -323,6 +324,28 @@ async function submitBooking(e) {
 window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});
 document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mainNav').classList.toggle('menu-open');});
 renderParkSessions();
+</script>
+
+<!-- Cookie consent popup -->
+<div id="cookieOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(58,46,42,0.45);backdrop-filter:blur(3px);"></div>
+<div id="cookiePopup" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;width:min(560px,calc(100vw - 2rem));background:#fdfaf8;border-radius:20px;padding:2rem;box-shadow:0 20px 60px rgba(58,46,42,0.18);font-family:'Jost',sans-serif;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#3a2e2a;margin-bottom:0.6rem;">Používame cookies</div>
+  <p style="font-size:0.85rem;line-height:1.7;color:#7a6660;margin-bottom:1.2rem;">
+    Táto stránka používa iba nevyhnutné cookies a lokálne úložisko pre správne fungovanie. Nepoužívame žiadne sledovacie ani marketingové nástroje.<br>
+    <a href="privacy.html" style="color:#b89a7a;text-decoration:underline;font-size:0.82rem;">Prečítať pravidlá spracovania osobných údajov →</a>
+  </p>
+  <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+    <button onclick="acceptCookies()" style="flex:1;min-width:140px;background:#b89a7a;color:#fff;border:none;padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Súhlasím</button>
+    <button onclick="declineCookies()" style="flex:1;min-width:140px;background:transparent;color:#7a6660;border:1px solid rgba(184,154,122,0.4);padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Nesúhlasím</button>
+  </div>
+  <p style="font-size:0.72rem;color:#b89a7a;margin-top:1rem;line-height:1.5;">Ak nesúhlasíte, stránka bude fungovať normálne, ale váš výber si nezapamätáme (pri ďalšej návšteve sa opýtame znova).</p>
+</div>
+<script>
+  function showCookiePopup(){document.getElementById('cookiePopup').style.display='block';document.getElementById('cookieOverlay').style.display='block';}
+  function hideCookiePopup(){document.getElementById('cookiePopup').style.display='none';document.getElementById('cookieOverlay').style.display='none';}
+  function acceptCookies(){localStorage.setItem('cookie_consent','accepted');hideCookiePopup();}
+  function declineCookies(){sessionStorage.setItem('cookie_dismissed','1');hideCookiePopup();}
+  if(!localStorage.getItem('cookie_consent')&&!sessionStorage.getItem('cookie_dismissed'))showCookiePopup();
 </script>
 </body>
 </html>

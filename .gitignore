@@ -1,0 +1,22 @@
+# Citlivé údaje – NIKDY do GitHubu!
+.env
+
+# Databáza
+magicspace.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+
+# Uploads (voliteľné – ak nechcete fotky v gite, odkomentujte)
+# uploads/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -19,7 +19,7 @@
     .nav-links a:hover { color:var(--gold); }
     .dropdown { position:relative; }
     .dropdown > a::after { content:' ▾';font-size:0.6rem; }
-    .dropdown-menu { position:absolute;top:calc(100% + 10px);left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
+    .dropdown-menu { position:absolute;top:100%;padding-top:10px;left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
     .dropdown:hover .dropdown-menu { opacity:1;pointer-events:all;transform:translateY(0); }
     .dropdown-menu a { display:block;padding:0.6rem 1.3rem;font-size:0.77rem;color:var(--text-light);white-space:nowrap;transition:all 0.15s; }
     .dropdown-menu a:hover { color:var(--gold);background:var(--rose); }
@@ -113,8 +113,6 @@
     .modal-overlay.open .modal { transform:translateY(0); }
     .modal h2 { font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:300;margin-bottom:0.4rem; }
     .modal-close { position:absolute;top:1rem;right:1.2rem;background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--text-light);line-height:1; }
-    .admin-link { position:fixed;bottom:1.8rem;right:1.8rem;z-index:99;background:rgba(58,46,42,0.75);color:var(--white);padding:0.6rem 1.1rem;border-radius:50px;text-decoration:none;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;backdrop-filter:blur(8px); }
-    .admin-link:hover { background:var(--text); }
 
     @media(max-width:900px){
       nav{padding:1.1rem 1.5rem;}
@@ -274,36 +272,32 @@
       <h2 class="section-title">Anastasia –<br>sprevádzam ženy<br>s <em>láskou</em></h2>
       <blockquote class="about-quote">„Magic Space je pozvanie – nájsť ticho uprostred ruchu, návrat k sebe a k tomu, čo je skutočne dôležité."</blockquote>
       <p class="about-text">
-        Volám sa Anastasia a som certifikovaná dula, inštruktorka jogy a sound healing terapeut.
+        Volám sa Anastasia a som certifikovaná dula, členka ČAD (Česká asociácia dúl), certifikovaná inštruktorka jogy a jogaterapeutka.
         Moja cesta k tomuto povolaniu nebola náhodná – prešla som si vlastným materstvom, hľadaním a uvedomením, že ženy si navzájom potrebujú.
       </p>
       <p class="about-text" style="margin-top:1rem">
-        Verím, že každá žena si zaslúži byť sprevádzaná s rešpektom, bez odsudzovania a s priestorom byť presne taká, aká je.
-        Či už prechádzaš tehotenstvom, pôrodom, šestonedelím – alebo jednoducho hľadáš chvíľu len pre seba.
+        Za sebou mám 4 roky štúdia na Vyššej škole psychológie, ktoré mi dali hlboké porozumenie pre ľudskú myseľ aj vzťahy. Verím, že každá žena si zaslúži byť sprevádzaná s rešpektom, bez odsudzovania a s priestorom byť presne taká, aká je.
       </p>
       <p class="about-text" style="margin-top:1rem">
-        Moje poslanie je priniesť pokoj, zdravie a istotu do každého okamihu tvojho života.
-        Podporujem telo aj dušu – cez jogu, meditácie, soundhealing a ženské rituály.
-        <!-- Tu môžeš doplniť ďalší text o sebe, vzdelaní, príbehu... -->
+        Či už prechádzaš tehotenstvom, pôrodom, šestonedelím – alebo jednoducho hľadáš chvíľu len pre seba. Moje poslanie je priniesť pokoj, zdravie a istotu do každého okamihu tvojho života cez jogu, meditácie, soundhealing a ženské rituály.
       </p>
 
-      <!-- HODNOTY / CERTIFIKÁTY - doplň podľa seba -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1.8rem 0">
         <div style="background:var(--rose);border-radius:12px;padding:1rem">
-          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Certifikácia</div>
-          <div style="font-size:0.88rem">Certifikovaná dula</div>
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Dula</div>
+          <div style="font-size:0.88rem">Certifikovaná dula · členka ČAD</div>
         </div>
         <div style="background:var(--rose);border-radius:12px;padding:1rem">
-          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Prax</div>
-          <div style="font-size:0.88rem">Joga & Sound Healing</div>
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Joga</div>
+          <div style="font-size:0.88rem">Certif. inštruktorka jogy · jogaterapeutka</div>
+        </div>
+        <div style="background:var(--rose);border-radius:12px;padding:1rem">
+          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Vzdelanie</div>
+          <div style="font-size:0.88rem">4 roky – Vyššia škola psychológie</div>
         </div>
         <div style="background:var(--rose);border-radius:12px;padding:1rem">
           <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Lokácia</div>
           <div style="font-size:0.88rem">Martin, Slovensko</div>
-        </div>
-        <div style="background:var(--rose);border-radius:12px;padding:1rem">
-          <div style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem">Dostupnosť</div>
-          <div style="font-size:0.88rem">Pon–Sob, pohotovosť 24/7</div>
         </div>
       </div>
 
@@ -363,6 +357,7 @@
     <a href="firmy.html">Pre firmy</a>
     <a href="#sesie">Sésie</a>
     <a href="#kontakt">Kontakt</a>
+    <a href="privacy.html">Ochrana údajov</a>
   </div>
   <p>© 2025 MagicSpace · Martin</p>
 </footer>
@@ -383,7 +378,6 @@
   </div>
 </div>
 
-<a href="admin.html" class="admin-link">⚙ Admin</a>
 
 <script src="/api.js"></script>
 <script>
@@ -475,6 +469,28 @@ async function submitContact(e) {
 window.addEventListener('scroll', () => { document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 60); });
 document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mainNav').classList.toggle('menu-open'); });
 renderSessions();
+</script>
+
+<!-- Cookie consent popup -->
+<div id="cookieOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(58,46,42,0.45);backdrop-filter:blur(3px);"></div>
+<div id="cookiePopup" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;width:min(560px,calc(100vw - 2rem));background:#fdfaf8;border-radius:20px;padding:2rem;box-shadow:0 20px 60px rgba(58,46,42,0.18);font-family:'Jost',sans-serif;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#3a2e2a;margin-bottom:0.6rem;">Používame cookies</div>
+  <p style="font-size:0.85rem;line-height:1.7;color:#7a6660;margin-bottom:1.2rem;">
+    Táto stránka používa iba nevyhnutné cookies a lokálne úložisko pre správne fungovanie. Nepoužívame žiadne sledovacie ani marketingové nástroje.<br>
+    <a href="privacy.html" style="color:#b89a7a;text-decoration:underline;font-size:0.82rem;">Prečítať pravidlá spracovania osobných údajov →</a>
+  </p>
+  <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+    <button onclick="acceptCookies()" style="flex:1;min-width:140px;background:#b89a7a;color:#fff;border:none;padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Súhlasím</button>
+    <button onclick="declineCookies()" style="flex:1;min-width:140px;background:transparent;color:#7a6660;border:1px solid rgba(184,154,122,0.4);padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Nesúhlasím</button>
+  </div>
+  <p style="font-size:0.72rem;color:#b89a7a;margin-top:1rem;line-height:1.5;">Ak nesúhlasíte, stránka bude fungovať normálne, ale váš výber si nezapamätáme (pri ďalšej návšteve sa opýtame znova).</p>
+</div>
+<script>
+  function showCookiePopup(){document.getElementById('cookiePopup').style.display='block';document.getElementById('cookieOverlay').style.display='block';}
+  function hideCookiePopup(){document.getElementById('cookiePopup').style.display='none';document.getElementById('cookieOverlay').style.display='none';}
+  function acceptCookies(){localStorage.setItem('cookie_consent','accepted');hideCookiePopup();}
+  function declineCookies(){sessionStorage.setItem('cookie_dismissed','1');hideCookiePopup();}
+  if(!localStorage.getItem('cookie_consent')&&!sessionStorage.getItem('cookie_dismissed'))showCookiePopup();
 </script>
 </body>
 </html>

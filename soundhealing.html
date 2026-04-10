@@ -20,7 +20,7 @@
     .nav-links a:hover,.nav-links a.active { color:var(--gold); }
     .dropdown { position:relative; }
     .dropdown > a::after { content:' ▾';font-size:0.6rem; }
-    .dropdown-menu { position:absolute;top:calc(100% + 10px);left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
+    .dropdown-menu { position:absolute;top:100%;padding-top:10px;left:0;min-width:220px;background:var(--white);border:1px solid rgba(184,154,122,0.15);border-radius:14px;padding:0.6rem 0;box-shadow:0 10px 35px rgba(58,46,42,0.1);opacity:0;pointer-events:none;transform:translateY(6px);transition:all 0.2s;z-index:200; }
     .dropdown:hover .dropdown-menu { opacity:1;pointer-events:all;transform:translateY(0); }
     .dropdown-menu a { display:block;padding:0.6rem 1.3rem;font-size:0.77rem;color:var(--text-light);white-space:nowrap; }
     .dropdown-menu a:hover { color:var(--gold);background:var(--rose); }
@@ -191,7 +191,7 @@
       <blockquote class="pull-quote">„Zvuk je vibrácia – a každá bunka vášho tela rezonuje."</blockquote>
     </div>
     <div class="col-image">
-      <img src="/uploads/sound.jpg" alt="Tibetské misky">
+      <img src="/uploads/sound1.JPG" alt="Tibetské misky">
     </div>
   </div>
 
@@ -215,7 +215,7 @@
 <section class="sec" style="background:var(--blush)" id="priebeh">
   <div class="two-col reverse">
     <div class="col-image right-deco">
-      <img src="/uploads/Pregnantcourse.jpg" alt="Priebeh sésie">
+      <img src="/uploads/sound2.png" alt="Priebeh sésie">
     </div>
     <div>
       <div class="section-tag">Priebeh</div>
@@ -264,6 +264,7 @@
     <a href="joga-park.html">Joga v parku</a>
     <a href="firmy.html">Pre firmy</a>
     <a href="index.html#kontakt">Kontakt</a>
+    <a href="privacy.html">Ochrana údajov</a>
   </div>
   <p>© 2025 MagicSpace · Martin</p>
 </footer>
@@ -327,6 +328,28 @@ async function submitBooking(e){
 window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});
 document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mainNav').classList.toggle('menu-open');});
 renderSessions();
+</script>
+
+<!-- Cookie consent popup -->
+<div id="cookieOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(58,46,42,0.45);backdrop-filter:blur(3px);"></div>
+<div id="cookiePopup" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;width:min(560px,calc(100vw - 2rem));background:#fdfaf8;border-radius:20px;padding:2rem;box-shadow:0 20px 60px rgba(58,46,42,0.18);font-family:'Jost',sans-serif;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#3a2e2a;margin-bottom:0.6rem;">Používame cookies</div>
+  <p style="font-size:0.85rem;line-height:1.7;color:#7a6660;margin-bottom:1.2rem;">
+    Táto stránka používa iba nevyhnutné cookies a lokálne úložisko pre správne fungovanie. Nepoužívame žiadne sledovacie ani marketingové nástroje.<br>
+    <a href="privacy.html" style="color:#b89a7a;text-decoration:underline;font-size:0.82rem;">Prečítať pravidlá spracovania osobných údajov →</a>
+  </p>
+  <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+    <button onclick="acceptCookies()" style="flex:1;min-width:140px;background:#b89a7a;color:#fff;border:none;padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Súhlasím</button>
+    <button onclick="declineCookies()" style="flex:1;min-width:140px;background:transparent;color:#7a6660;border:1px solid rgba(184,154,122,0.4);padding:0.72rem 1.2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Nesúhlasím</button>
+  </div>
+  <p style="font-size:0.72rem;color:#b89a7a;margin-top:1rem;line-height:1.5;">Ak nesúhlasíte, stránka bude fungovať normálne, ale váš výber si nezapamätáme (pri ďalšej návšteve sa opýtame znova).</p>
+</div>
+<script>
+  function showCookiePopup(){document.getElementById('cookiePopup').style.display='block';document.getElementById('cookieOverlay').style.display='block';}
+  function hideCookiePopup(){document.getElementById('cookiePopup').style.display='none';document.getElementById('cookieOverlay').style.display='none';}
+  function acceptCookies(){localStorage.setItem('cookie_consent','accepted');hideCookiePopup();}
+  function declineCookies(){sessionStorage.setItem('cookie_dismissed','1');hideCookiePopup();}
+  if(!localStorage.getItem('cookie_consent')&&!sessionStorage.getItem('cookie_dismissed'))showCookiePopup();
 </script>
 </body>
 </html>
