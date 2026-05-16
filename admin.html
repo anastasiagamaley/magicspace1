@@ -361,7 +361,7 @@
     <h2 id="smTitle">Nová sésia</h2>
     <div class="form-grid">
       <div class="fg form-full"><label>Názov sésie *</label><input type="text" id="s_title" placeholder="Sound Healing"></div>
-      <div class="fg"><label>Dátum *</label><input type="date" id="s_date"></div>
+      <div class="fg"><label>Dátum *</label><input type="date" id="s_date" onchange="onDateChange()"></div>
       <div class="fg"><label>Čas * (napr. 10:00)</label><input type="text" id="s_time" placeholder="10:00"></div>
       <div class="fg"><label>Trvanie</label><input type="text" id="s_duration" placeholder="90 min"></div>
       <div class="fg"><label>Cena</label><input type="text" id="s_price" placeholder="20 €"></div>
@@ -476,13 +476,17 @@ function showPanel(name){
 // ── HELPERS ───────────────────────────────────────────────────
 function fmtDate(d){
   if(!d||d==='-') return '–';
-  try{ return new Date(d+'T00:00:00').toLocaleDateString('sk-SK',{day:'numeric',month:'short',year:'numeric'}); }
+  try{ const [y,m,day]=d.split('T')[0].split('-'); return `${parseInt(day)}.${parseInt(m)}.${y}`; }
   catch{ return d; }
 }
 function fmtDT(d){
   if(!d) return '–';
-  try{ const dt=new Date(d); return dt.toLocaleDateString('sk-SK',{day:'numeric',month:'short'})+' '+dt.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'}); }
-  catch{ return d; }
+  try{
+    const dt=new Date(d);
+    const day=dt.getDate(), mon=dt.getMonth()+1, y=dt.getFullYear();
+    const h=String(dt.getHours()).padStart(2,'0'), mi=String(dt.getMinutes()).padStart(2,'0');
+    return `${day}.${mon}.${y} ${h}:${mi}`;
+  } catch{ return d; }
 }
 function badgeLbl(b){ return {active:'Aktívna',full:'Plná',cancelled:'Zrušená',pending:'Čaká',confirmed:'Potvrdená',new:'Nová',read:'Prečítaná'}[b]||b; }
 function thumb(url){
@@ -686,12 +690,24 @@ function toggleRecurUntil(){
   document.getElementById('recurUntilWrap').style.display=v?'block':'none';
   document.getElementById('recurInfoWrap').style.display=v?'block':'none';
 }
+function onDateChange(){
+  const d=document.getElementById('s_date').value;
+  if(d) document.getElementById('s_recur_until').min=d;
+}
+function todayISO(){ return new Date().toISOString().split('T')[0]; }
+function normalizeTime(t){
+  if(!t) return '';
+  const m=t.trim().match(/^(\d{1,2})[:\.](\d{2})$/);
+  return m ? m[1].padStart(2,'0')+':'+m[2] : t.trim();
+}
 
 function openAddSession(project='main'){
   editingId=null; editingProject=project;
   document.getElementById('smTitle').textContent = project==='park'?'Nová lekcia v parku':'Nová sésia';
   ['title','duration','price','desc'].forEach(f=>document.getElementById('s_'+f).value='');
   document.getElementById('s_date').value='';
+  document.getElementById('s_date').min=todayISO();
+  document.getElementById('s_recur_until').min=todayISO();
   document.getElementById('s_time').value='';
   document.getElementById('s_spots').value='';
   document.getElementById('s_badge').value='active';
@@ -716,6 +732,7 @@ async function editSession(id, project='main'){
     const s=sessions.find(x=>x.id===id); if(!s) return;
     document.getElementById('s_title').value=s.title;
     document.getElementById('s_date').value=s.date;
+    document.getElementById('s_date').min='';
     document.getElementById('s_time').value=s.time;
     document.getElementById('s_duration').value=s.duration;
     document.getElementById('s_price').value=s.price;
@@ -738,10 +755,29 @@ async function editSession(id, project='main'){
 }
 
 async function saveSession(){
+  const title     = document.getElementById('s_title').value.trim();
+  const date      = document.getElementById('s_date').value;
+  const time      = normalizeTime(document.getElementById('s_time').value);
+  const recurType = document.getElementById('s_recur_type').value;
+  const recurUntil= document.getElementById('s_recur_until').value;
+
+  // Required field check
+  if(!title||!date||!time){
+    const missing=[];
+    if(!title) missing.push('názov');
+    if(!date)  missing.push('dátum');
+    if(!time)  missing.push('čas');
+    toast('Vyplňte: '+missing.join(', '),'error'); return;
+  }
+  // Time format HH:MM
+  if(!/^\d{2}:\d{2}$/.test(time)){ toast('Čas zadajte vo formáte HH:MM (napr. 10:00)','error'); return; }
+  // Past date check for new sessions
+  if(!editingId && date < todayISO()){ toast('Dátum nemôže byť v minulosti','error'); return; }
+  // recur_until must be after date
+  if(recurUntil && recurUntil <= date){ toast('Dátum konca opakovania musí byť po dátume sésie','error'); return; }
+
   const data={
-    title:      document.getElementById('s_title').value.trim(),
-    date:       document.getElementById('s_date').value,
-    time:       document.getElementById('s_time').value,
+    title, date, time,
     duration:   document.getElementById('s_duration').value||'60 min',
     price:      document.getElementById('s_price').value||'0 €',
     spots:      parseInt(document.getElementById('s_spots').value)||10,
@@ -750,17 +786,9 @@ async function saveSession(){
     desc:       document.getElementById('s_desc').value,
     project:    editingProject,
     image_url:  document.getElementById('s_image_url').value,
-    recur_type: document.getElementById('s_recur_type').value,
-    recur_until:document.getElementById('s_recur_until').value,
+    recur_type: recurType,
+    recur_until: recurUntil,
   };
-  if(!data.title||!data.date||!data.time){
-    const missing=[];
-    if(!data.title) missing.push('názov');
-    if(!data.date)  missing.push('dátum');
-    if(!data.time)  missing.push('čas');
-    toast('Vyplňte: '+missing.join(', '),'error');
-    return;
-  }
   const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Ukladám…';
   try{
     if(editingId) await API.updateSession(editingId,data);
