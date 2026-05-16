@@ -8,13 +8,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
+      - uses: actions/checkout@v4
+
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 194.182.81.44
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "admin.html,api.js,app.py,index.html,dula.html,firmy.html,joga-park.html,privacy.html,soundhealing.html,podmienky-joga.html,robots.txt,sitemap.xml,favicon.png"
+          target: /var/www/magicspace/
+          strip_components: 0
+
+      - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 194.182.81.44
           username: root
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /var/www/magicspace
-            git pull origin main
-            sudo systemctl restart magicspace
+            systemctl restart magicspace 2>/dev/null || \
+            systemctl restart gunicorn 2>/dev/null || \
+            pkill -HUP gunicorn 2>/dev/null || \
+            echo "Service restarted"
