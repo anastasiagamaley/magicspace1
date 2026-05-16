@@ -3,6 +3,7 @@
 
 # Databáza
 magicspace.db
+data/subscribers.db
 
 # Python
 __pycache__/

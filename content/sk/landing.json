@@ -1,0 +1,17 @@
+{
+  "_note": "All Slovak client-facing copy lives here. Adding Russian = create content/ru/landing.json",
+  "headline": "TODO: main promise headline",
+  "subheadline": "TODO: subheadline",
+  "who_title": "TODO: who is Anastasia",
+  "who_body": "TODO: doula intro paragraph",
+  "gift_title": "TODO: what you get free",
+  "gift_items": [
+    "TODO: Pre-birth checklist PDF",
+    "TODO: 1-hour birth-prep video course (private Telegram)"
+  ],
+  "form_label": "Váš email",
+  "form_consent": "TODO: GDPR consent text (not pre-ticked, required)",
+  "form_button": "Získať zadarmo",
+  "disclaimer": "TODO: not medical advice disclaimer",
+  "privacy_link_text": "Ochrana osobných údajov"
+}

@@ -1,0 +1,4 @@
+# data/ — SQLite subscriber database (subscribers.db)
+# This file is NOT committed to git (added to .gitignore)
+# Structure (Step 5):
+#   subscribers(id, email, consent_at, source, language, nurture_step, next_nurture_at)
