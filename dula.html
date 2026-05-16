@@ -2,6 +2,7 @@
 <html lang="sk">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="/uploads/favicon.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dula · Joga pre tehotné · Rebozo | Magic Space Martin</title>
   <meta name="description" content="Certifikovaná dula Anastasia v Martine – sprevádzanie pri pôrode, joga pre tehotné, Cerrada rituál, masáž Rebozo. Členka ČAD, jogaterapeutka.">
@@ -22,7 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#7a6660;--white:#fdfaf8;--gold:#b89a7a; }
+    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#584840;--white:#fdfaf8;--gold:#b89a7a; }
     html { scroll-behavior: smooth; }
     body { font-family:'Jost',sans-serif;background:var(--white);color:var(--text);font-weight:300;overflow-x:hidden; }
 
@@ -144,7 +145,7 @@
       nav{padding:1.1rem 1.5rem;}
       .nav-links,.nav-cta{display:none;}
       .hamburger{display:block;}
-      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:0.5rem;z-index:90;overflow-y:auto;} nav.menu-open .dropdown-menu{position:static;opacity:1;pointer-events:all;transform:none;box-shadow:none;border:none;background:var(--rose);border-radius:10px;padding:0.3rem 0;margin-top:0.2rem;width:100%;max-width:260px;} nav.menu-open .dropdown{display:flex;flex-direction:column;align-items:center;width:100%;}
       nav.menu-open .nav-cta{display:block;}
       .page-hero{grid-template-columns:1fr;}
       .page-hero-right{height:55vw;}
@@ -154,6 +155,9 @@
       .contact-strip{flex-direction:column;text-align:center;}
     }
   </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
 </head>
 <body>
 
@@ -169,7 +173,7 @@
         <a href="#kurz">Príprava na pôrod</a>
       </div>
     </li>
-    <li><a href="joga-park.html">Joga v parku</a></li>
+    <li><a href="https://www.magicspace.sk/jogamartin">Joga v parku</a></li>
     <li><a href="soundhealing.html">Sound Healing</a></li>
     <li class="dropdown">
       <a href="firmy.html">Pre firmy</a>
@@ -497,11 +501,46 @@
   </div>
 </div>
 
+<!-- RECENZIE -->
+<section style="padding:5rem 5vw;background:#fdfaf8">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:#b89a7a;margin-bottom:1rem;display:flex;align-items:center;gap:0.7rem"><span style="display:inline-block;width:24px;height:1px;background:#b89a7a"></span>Recenzie</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:300;margin-bottom:0.5rem">Čo hovoria<br><em style="font-style:italic;color:#b89a7a">klientky</em></h2>
+    <p style="font-size:0.88rem;color:#7a6660;margin-bottom:2.5rem">Skutočné príbehy skutočných ľudí.</p>
+    <div id="dulaReviews" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-bottom:3rem"></div>
+
+    <div style="background:#f5e6e0;border-radius:20px;padding:2rem 2.2rem;max-width:520px">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;margin-bottom:1.2rem">Zanechajte recenziu</h3>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#7a6660;margin-bottom:0.35rem">Meno *</label>
+        <input id="drName" type="text" placeholder="Jana Nováková" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(184,154,122,0.25);border-radius:10px;background:#fff;font-family:'Jost',sans-serif;font-size:0.88rem;outline:none">
+      </div>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#7a6660;margin-bottom:0.35rem">E-mail (neverejný)</label>
+        <input id="drEmail" type="email" placeholder="jana@email.sk" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(184,154,122,0.25);border-radius:10px;background:#fff;font-family:'Jost',sans-serif;font-size:0.88rem;outline:none">
+      </div>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#7a6660;margin-bottom:0.5rem">Hodnotenie *</label>
+        <div id="drStars" style="display:flex;gap:0.4rem;font-size:1.6rem;cursor:pointer">
+          <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span data-v="4">☆</span><span data-v="5">☆</span>
+        </div>
+        <input type="hidden" id="drStarsVal" value="0">
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#7a6660;margin-bottom:0.35rem">Vaša skúsenosť *</label>
+        <textarea id="drText" rows="3" placeholder="Pár slov o vašej skúsenosti…" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(184,154,122,0.25);border-radius:10px;background:#fff;font-family:'Jost',sans-serif;font-size:0.88rem;resize:vertical;outline:none"></textarea>
+      </div>
+      <button onclick="submitReview('dula')" style="background:#b89a7a;color:#fff;border:none;padding:0.8rem 2rem;border-radius:50px;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Odoslať recenziu</button>
+      <p id="drMsg" style="font-size:0.82rem;color:#7a6660;margin-top:0.8rem;display:none">✓ Ďakujeme! Recenzia bude zverejnená po schválení.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="footer-logo">Magic<span>Space</span></div>
   <div class="footer-links">
     <a href="index.html">Domov</a>
-    <a href="joga-park.html">Joga v parku</a>
+    <a href="https://www.magicspace.sk/jogamartin">Joga v parku</a>
     <a href="soundhealing.html">Sound Healing</a>
     <a href="firmy.html">Pre firmy</a>
     <a href="index.html#kontakt">Kontakt</a>
@@ -516,6 +555,44 @@ document.getElementById('hamburger').addEventListener('click',()=>{document.getE
 document.querySelectorAll('.faq-item').forEach(item=>{
   item.addEventListener('click',()=>{item.classList.toggle('open');});
 });
+// Recenzie
+(async()=>{
+  const box=document.getElementById('dulaReviews');
+  try{
+    const list=await API.getReviews('dula');
+    if(!list.length){box.innerHTML='<p style="color:#7a6660;font-size:0.88rem">Zatiaľ žiadne recenzie.</p>';return;}
+    box.innerHTML=list.map(r=>`<div style="background:#fff;border-radius:16px;padding:1.4rem 1.6rem;border:1px solid rgba(184,154,122,0.15)">
+      <div style="color:#b89a7a;font-size:1.1rem;margin-bottom:0.5rem">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <p style="font-size:0.88rem;color:#3a2e2a;line-height:1.7;margin-bottom:0.8rem">"${r.text}"</p>
+      <strong style="font-size:0.8rem;color:#7a6660">${r.name}</strong>
+    </div>`).join('');
+  }catch(e){box.innerHTML='';}
+})();
+let drStarsVal=0;
+document.getElementById('drStars').querySelectorAll('span').forEach(s=>{
+  s.addEventListener('mouseenter',()=>{
+    document.getElementById('drStars').querySelectorAll('span').forEach((x,i)=>x.textContent=i<parseInt(s.dataset.v)?'★':'☆');
+  });
+  s.addEventListener('click',()=>{
+    drStarsVal=parseInt(s.dataset.v);
+    document.getElementById('drStarsVal').value=drStarsVal;
+  });
+});
+document.getElementById('drStars').addEventListener('mouseleave',()=>{
+  document.getElementById('drStars').querySelectorAll('span').forEach((x,i)=>x.textContent=i<drStarsVal?'★':'☆');
+});
+async function submitReview(page){
+  const name=document.getElementById('drName').value.trim();
+  const text=document.getElementById('drText').value.trim();
+  const stars=parseInt(document.getElementById('drStarsVal').value)||0;
+  if(!name||!text||!stars){alert('Vyplňte meno, hodnotenie a text.');return;}
+  await API.createReview({page,name,email:document.getElementById('drEmail').value,stars,text});
+  document.getElementById('drMsg').style.display='block';
+  document.getElementById('drName').value='';document.getElementById('drEmail').value='';
+  document.getElementById('drText').value='';drStarsVal=0;
+  document.getElementById('drStars').querySelectorAll('span').forEach(x=>x.textContent='☆');
+}
+
 // Anchor nav highlight
 const anchors=document.querySelectorAll('.anchor-nav a');
 window.addEventListener('scroll',()=>{

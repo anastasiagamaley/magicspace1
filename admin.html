@@ -180,7 +180,9 @@
 
     <div class="sidebar-section">Zákazníci</div>
     <div class="nav-item" id="nav-bookings" onclick="showPanel('bookings')">📅 <span>Rezervácie</span></div>
+    <div class="nav-item" id="nav-clients" onclick="showPanel('clients')">👥 <span>Klienti</span></div>
     <div class="nav-item" id="nav-contacts" onclick="showPanel('contacts')">✉️ <span>Správy</span> <span class="badge-dot" id="contactDot" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-reviews" onclick="showPanel('reviews')">⭐ <span>Odozvy</span> <span class="badge-dot" id="reviewDot" style="display:none">0</span></div>
 
     <div class="sidebar-section">Systém</div>
     <div class="nav-item" onclick="showPanel('settings')">⚙️ <span>Nastavenia</span></div>
@@ -264,6 +266,20 @@
       </div>
     </div>
 
+    <!-- ── CLIENTS ── -->
+    <div class="panel" id="panel-clients">
+      <div class="topbar">
+        <h1>Klienti 👥</h1>
+        <button class="ab-main" onclick="openEmailAll()">✉️ Poslať všetkým</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Meno</th><th>Email</th><th>Telefón</th><th>Rezervácií</th><th>Súhlas</th><th>Posledná návšteva</th><th>Akcie</th></tr></thead>
+          <tbody id="clientsTable"><tr class="empty-row"><td colspan="6">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
     <!-- ── CONTACTS ── -->
     <div class="panel" id="panel-contacts">
       <div class="topbar"><h1>Správy od klientov</h1></div>
@@ -271,6 +287,25 @@
         <div class="table-wrap"><table>
           <thead><tr><th>Meno</th><th>Email</th><th>Telefón</th><th>Téma</th><th>Správa</th><th>Dátum</th><th>Stav</th><th>Akcie</th></tr></thead>
           <tbody id="contactsTable"><tr class="empty-row"><td colspan="8">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── REVIEWS ── -->
+    <div class="panel" id="panel-reviews">
+      <div class="topbar"><h1>Odozvy / Recenzie ⭐</h1></div>
+      <div class="card">
+        <div class="card-head"><h2>Čakajúce na schválenie</h2><span id="reviewPendingCount" style="font-size:0.8rem;color:var(--tl)"></span></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Stránka</th><th>Meno</th><th>Email</th><th>⭐</th><th>Text</th><th>Dátum</th><th>Akcie</th></tr></thead>
+          <tbody id="reviewsPendingTable"><tr class="empty-row"><td colspan="7">Načítavam…</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Schválené a zverejnené</h2></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Stránka</th><th>Meno</th><th>Email</th><th>⭐</th><th>Text</th><th>Dátum</th><th>Akcie</th></tr></thead>
+          <tbody id="reviewsApprovedTable"><tr class="empty-row"><td colspan="7">Načítavam…</td></tr></tbody>
         </table></div>
       </div>
     </div>
@@ -340,6 +375,24 @@
       </div>
       <div class="fg form-full"><label>Miesto konania</label><input type="text" id="s_location" placeholder="Andreja Kmeťa 577/22, Martin"></div>
       <div class="fg form-full"><label>Popis</label><textarea id="s_desc" rows="3" placeholder="Krátky popis sésie…"></textarea></div>
+      <div class="fg form-full" id="recurGroup">
+        <label>Opakovanie</label>
+        <select id="s_recur_type" onchange="toggleRecurUntil()">
+          <option value="">Jednorazová sésia</option>
+          <option value="weekly">Každý týždeň</option>
+          <option value="biweekly">Každé 2 týždne</option>
+        </select>
+      </div>
+      <div class="fg" id="recurUntilWrap" style="display:none">
+        <label>Opakovať do (nepovinné)</label>
+        <input type="date" id="s_recur_until">
+      </div>
+      <div class="fg form-full" id="recurInfoWrap" style="display:none">
+        <p style="font-size:0.78rem;color:var(--tl);background:var(--sage);border-radius:8px;padding:0.6rem 0.9rem;line-height:1.5">
+          🔁 Automaticky vytvorí lekcie každý týždeň (alebo každé 2 týždne) od zadaného dátumu.<br>
+          Bez dátumu konca = lekcie sa vytvoria na <strong>3 mesiace</strong> vopred. Po vytvorení môžete každú lekciu upraviť samostatne.
+        </p>
+      </div>
       <div class="fg form-full">
         <label>Fotografia sésie</label>
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imgFile').click()"
@@ -358,6 +411,21 @@
     <div class="btn-row">
       <button class="ab ab-outline" style="padding:0.5rem 1rem" onclick="closeSessionModal()">Zrušiť</button>
       <button class="ab-main" id="saveBtn" onclick="saveSession()">Uložiť sésiu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EMAIL MODAL ── -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeEmailModal()">×</button>
+    <h2 id="emTitle">Napísať klientovi</h2>
+    <p id="emTo" style="font-size:0.82rem;color:var(--tl);margin-bottom:1.2rem"></p>
+    <div class="fg"><label>Predmet *</label><input type="text" id="em_subject" placeholder="Nová lekcia, akcia…"></div>
+    <div class="fg"><label>Správa *</label><textarea id="em_message" rows="7" placeholder="Text správy…"></textarea></div>
+    <div class="btn-row">
+      <button class="ab ab-outline" style="padding:0.5rem 1rem" onclick="closeEmailModal()">Zrušiť</button>
+      <button class="ab-main" id="emSendBtn" onclick="sendClientEmailNow()">Odoslať ✉️</button>
     </div>
   </div>
 </div>
@@ -392,14 +460,16 @@ function showPanel(name){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   // highlight nav
-  const map={dashboard:'📊',sessions:'🧘',park:'🌿',bookings:'📅',contacts:'✉️',settings:'⚙️'};
+  const map={dashboard:'📊',sessions:'🧘',park:'🌿',bookings:'📅',clients:'👥',contacts:'✉️',reviews:'⭐',settings:'⚙️'};
   document.querySelectorAll('.nav-item').forEach(n=>{ if(n.textContent.includes(map[name])) n.classList.add('active'); });
   // load data
   if(name==='dashboard') loadDashboard();
   if(name==='sessions')  loadSessions('main');
   if(name==='park')      loadSessions('park');
   if(name==='bookings')  loadBookings();
+  if(name==='clients')   loadClients();
   if(name==='contacts')  loadContacts();
+  if(name==='reviews')   loadReviews();
   if(name==='settings')  loadSettings();
 }
 
@@ -487,6 +557,7 @@ async function loadSessions(project){
         <button class="ab ab-outline" onclick="editSession(${s.id},'${project}')">Upraviť</button>
         <button class="ab ${s.badge==='cancelled'?'ab-green':'ab-outline'}" onclick="cancelSessionAPI(${s.id},'${project}')">${s.badge==='cancelled'?'Obnoviť':'Zrušiť'}</button>
         <button class="ab ab-red" onclick="deleteSessionAPI(${s.id},'${project}')">Zmazať</button>
+        ${s.recur_parent_id||s.recur_type?`<button class="ab ab-red" style="margin-top:0.25rem" onclick="deleteRecurGroupAPI(${s.id},'${project}')">🔁 Sériu</button>`:''}
       </td>
     </tr>`).join('') || '<tr class="empty-row"><td colspan="7">Žiadne sésie</td></tr>';
   } catch(e){ toast('Chyba načítania sésií','error'); }
@@ -507,7 +578,6 @@ async function loadBookings(){
       <td><small>${fmtDT(b.created_at)}</small></td>
       <td><span class="bdg bdg-${b.status}">${badgeLbl(b.status)}</span></td>
       <td>
-        ${b.status!=='confirmed'?`<button class="ab ab-green" onclick="confirmBookingAPI(${b.id})">✓ Potvrdiť</button>`:''}
         <button class="ab ab-red" onclick="deleteBookingAPI(${b.id})">Zrušiť</button>
       </td>
     </tr>`).join('')||'<tr class="empty-row"><td colspan="8">Žiadne rezervácie</td></tr>';
@@ -539,6 +609,61 @@ async function loadContacts(){
   } catch(e){ toast('Chyba načítania správ','error'); }
 }
 async function markReadAPI(id){ await API.markContactRead(id); loadContacts(); loadDashboard(); }
+
+// ── CLIENTS ───────────────────────────────────────────────────
+async function loadClients(){
+  const tbody=document.getElementById('clientsTable');
+  tbody.innerHTML='<tr class="empty-row"><td colspan="6">Načítavam…</td></tr>';
+  try{
+    const clients=await API.getClients();
+    if(!clients.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="6">Zatiaľ žiadni klienti</td></tr>'; return; }
+    tbody.innerHTML=clients.map(c=>`<tr>
+      <td><strong>${c.name}</strong></td>
+      <td><a href="mailto:${c.email}" style="color:var(--gold);text-decoration:none">${c.email}</a></td>
+      <td>${c.phone||'–'}</td>
+      <td style="text-align:center"><span class="bdg bdg-active">${c.total_bookings}</span></td>
+      <td style="text-align:center">${c.terms_accepted?'<span style="color:#5a8a5a;font-size:1.1rem">✓</span>':'<span style="color:#ccc">–</span>'}</td>
+      <td><small>${fmtDT(c.last_booking)}</small></td>
+      <td><button class="ab ab-gold" onclick="openEmailOne('${c.email}','${c.name.replace(/'/g,"\\'")}')">✉️ Napísať</button></td>
+    </tr>`).join('');
+  } catch(e){ toast('Chyba načítania klientov','error'); }
+}
+
+let emailTarget='';
+function openEmailOne(email, name){
+  emailTarget=email;
+  document.getElementById('emTitle').textContent='Napísať klientovi';
+  document.getElementById('emTo').textContent='Komu: '+name+' <'+email+'>';
+  document.getElementById('em_subject').value='';
+  document.getElementById('em_message').value='';
+  document.getElementById('emailModal').classList.add('open');
+}
+function openEmailAll(){
+  emailTarget='all';
+  document.getElementById('emTitle').textContent='Poslať všetkým klientom';
+  document.getElementById('emTo').textContent='Komu: všetci klienti v databáze';
+  document.getElementById('em_subject').value='';
+  document.getElementById('em_message').value='';
+  document.getElementById('emailModal').classList.add('open');
+}
+function closeEmailModal(){
+  document.getElementById('emailModal').classList.remove('open');
+}
+document.getElementById('emailModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeEmailModal(); });
+
+async function sendClientEmailNow(){
+  const subject=document.getElementById('em_subject').value.trim();
+  const message=document.getElementById('em_message').value.trim();
+  if(!subject||!message){ toast('Vyplňte predmet a správu','error'); return; }
+  const btn=document.getElementById('emSendBtn');
+  btn.disabled=true; btn.textContent='Odosielam…';
+  try{
+    const res=await API.sendClientEmail({to:emailTarget, subject, message});
+    toast(`Odoslané ${res.sent} príjemcom ✓`,'success');
+    closeEmailModal();
+  } catch(e){ toast(e.message||'Chyba odoslania','error'); }
+  btn.disabled=false; btn.textContent='Odoslať ✉️';
+}
 async function deleteContactAPI(id){ if(!confirm('Zmazať správu?')) return; await API.deleteContact(id); toast('Zmazané'); loadContacts(); loadDashboard(); }
 
 // ── SETTINGS ──────────────────────────────────────────────────
@@ -556,6 +681,12 @@ async function loadSettings(){
 // ── SESSION CRUD ──────────────────────────────────────────────
 let editingId=null, editingProject='main';
 
+function toggleRecurUntil(){
+  const v=document.getElementById('s_recur_type').value;
+  document.getElementById('recurUntilWrap').style.display=v?'block':'none';
+  document.getElementById('recurInfoWrap').style.display=v?'block':'none';
+}
+
 function openAddSession(project='main'){
   editingId=null; editingProject=project;
   document.getElementById('smTitle').textContent = project==='park'?'Nová lekcia v parku':'Nová sésia';
@@ -564,11 +695,16 @@ function openAddSession(project='main'){
   document.getElementById('s_time').value='';
   document.getElementById('s_spots').value='';
   document.getElementById('s_badge').value='active';
-  document.getElementById('s_location').value= project==='park'?'Park pri Kotline, Martin':'Andreja Kmeťa 577/22, Martin';
+  document.getElementById('s_location').value= project==='park'?'Schody pred SNM, Martin':'Andreja Kmeťa 577/22, Martin';
   document.getElementById('s_image_url').value='';
   document.getElementById('currentImgUrl').textContent='–';
   document.getElementById('uploadPreview').style.display='none';
   document.getElementById('uploadPreview').src='';
+  document.getElementById('s_recur_type').value='';
+  document.getElementById('s_recur_until').value='';
+  document.getElementById('recurUntilWrap').style.display='none';
+  document.getElementById('recurInfoWrap').style.display='none';
+  document.getElementById('recurGroup').style.display='';
   document.getElementById('sessionModal').classList.add('open');
 }
 
@@ -591,23 +727,31 @@ async function editSession(id, project='main'){
     const imgEl=document.getElementById('uploadPreview');
     if(s.image_url){ imgEl.src=s.image_url; imgEl.style.display='block'; document.getElementById('currentImgUrl').textContent=s.image_url; }
     else { imgEl.style.display='none'; document.getElementById('currentImgUrl').textContent='–'; }
+    // Recurrence – editing individual instances doesn't re-generate series
+    document.getElementById('s_recur_type').value='';
+    document.getElementById('s_recur_until').value='';
+    document.getElementById('recurUntilWrap').style.display='none';
+    document.getElementById('recurInfoWrap').style.display='none';
+    document.getElementById('recurGroup').style.display='none'; // hide when editing existing
     document.getElementById('sessionModal').classList.add('open');
   } catch(e){ toast('Chyba načítania','error'); }
 }
 
 async function saveSession(){
   const data={
-    title:    document.getElementById('s_title').value.trim(),
-    date:     document.getElementById('s_date').value,
-    time:     document.getElementById('s_time').value,
-    duration: document.getElementById('s_duration').value||'60 min',
-    price:    document.getElementById('s_price').value||'0 €',
-    spots:    parseInt(document.getElementById('s_spots').value)||10,
-    badge:    document.getElementById('s_badge').value,
-    location: document.getElementById('s_location').value,
-    desc:     document.getElementById('s_desc').value,
-    project:  editingProject,
-    image_url:document.getElementById('s_image_url').value,
+    title:      document.getElementById('s_title').value.trim(),
+    date:       document.getElementById('s_date').value,
+    time:       document.getElementById('s_time').value,
+    duration:   document.getElementById('s_duration').value||'60 min',
+    price:      document.getElementById('s_price').value||'0 €',
+    spots:      parseInt(document.getElementById('s_spots').value)||10,
+    badge:      document.getElementById('s_badge').value,
+    location:   document.getElementById('s_location').value,
+    desc:       document.getElementById('s_desc').value,
+    project:    editingProject,
+    image_url:  document.getElementById('s_image_url').value,
+    recur_type: document.getElementById('s_recur_type').value,
+    recur_until:document.getElementById('s_recur_until').value,
   };
   if(!data.title||!data.date||!data.time){ toast('Vyplňte názov, dátum a čas','error'); return; }
   const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Ukladám…';
@@ -637,6 +781,13 @@ async function deleteSessionAPI(id, project){
   loadSessions(project); loadDashboard();
 }
 
+async function deleteRecurGroupAPI(id, project){
+  if(!confirm('Zmazať CELÚ sériu opakujúcich sa lekcií? Všetky budúce lekcie v tejto sérii budú vymazané.')) return;
+  await API.deleteRecurGroup(id);
+  toast('Celá séria lekcií bola vymazaná','success');
+  loadSessions(project); loadDashboard();
+}
+
 function closeSessionModal(){
   document.getElementById('sessionModal').classList.remove('open');
 }
@@ -652,19 +803,73 @@ function handleDrop(e){
   const file=e.dataTransfer.files[0];
   if(file) uploadImage(file);
 }
+// ── REVIEWS ───────────────────────────────────────────────────
+function starsHtml(n){
+  return '★'.repeat(n||0)+'☆'.repeat(5-(n||0));
+}
+async function loadReviews(){
+  document.getElementById('reviewsPendingTable').innerHTML='<tr class="empty-row"><td colspan="7">Načítavam…</td></tr>';
+  document.getElementById('reviewsApprovedTable').innerHTML='<tr class="empty-row"><td colspan="7">Načítavam…</td></tr>';
+  try{
+    const reviews=await API.getReviewsAdmin();
+    const pending=reviews.filter(r=>r.status==='pending');
+    const approved=reviews.filter(r=>r.status==='approved');
+
+    const pendingDot=document.getElementById('reviewDot');
+    if(pending.length>0){ pendingDot.style.display=''; pendingDot.textContent=pending.length; }
+    else pendingDot.style.display='none';
+    document.getElementById('reviewPendingCount').textContent=pending.length?`(${pending.length})` :'';
+
+    function rowHtml(r, isPending){
+      const pageLbl={dula:'Doula',park:'Joga v parku'}[r.page]||r.page;
+      return `<tr>
+        <td><span class="bdg bdg-active">${pageLbl}</span></td>
+        <td><strong>${r.name||'–'}</strong></td>
+        <td><a href="mailto:${r.email||''}" style="color:var(--gold);text-decoration:none">${r.email||'–'}</a></td>
+        <td style="color:#c8a84b;letter-spacing:-1px">${starsHtml(r.stars)}</td>
+        <td class="msg-text" title="${(r.text||'').replace(/"/g,'&quot;')}">${r.text||'–'}</td>
+        <td><small>${fmtDT(r.created_at)}</small></td>
+        <td>
+          ${isPending?`<button class="ab ab-green" onclick="approveReviewAPI(${r.id})">✓ Schváliť</button>`:''}
+          <button class="ab ab-red" onclick="deleteReviewAPI(${r.id})">Zmazať</button>
+        </td>
+      </tr>`;
+    }
+
+    document.getElementById('reviewsPendingTable').innerHTML=
+      pending.length ? pending.map(r=>rowHtml(r,true)).join('') : '<tr class="empty-row"><td colspan="7">Žiadne čakajúce odozvy</td></tr>';
+    document.getElementById('reviewsApprovedTable').innerHTML=
+      approved.length ? approved.map(r=>rowHtml(r,false)).join('') : '<tr class="empty-row"><td colspan="7">Žiadne schválené odozvy</td></tr>';
+  } catch(e){ toast('Chyba načítania odoziev','error'); }
+}
+
+async function approveReviewAPI(id){
+  await API.approveReview(id);
+  toast('Odozva schválená a zverejnená ✓','success');
+  loadReviews();
+}
+
+async function deleteReviewAPI(id){
+  if(!confirm('Naozaj zmazať túto odozvu?')) return;
+  await API.deleteReview(id);
+  toast('Odozva zmazaná');
+  loadReviews();
+}
+
 async function uploadImage(file){
   const zone=document.getElementById('uploadZone');
-  zone.innerHTML='<div style="font-size:1.5rem">⏳</div><p>Nahrávam…</p>';
+  const zoneText=zone.querySelector('p');
+  if(zoneText) zoneText.textContent='Nahrávam…';
   try{
     const result=await API.uploadImage(file);
     document.getElementById('s_image_url').value=result.url;
     document.getElementById('currentImgUrl').textContent=result.url;
     const prev=document.getElementById('uploadPreview');
     prev.src=result.url; prev.style.display='block';
-    zone.innerHTML=`<div style="font-size:1.5rem">✅</div><p>Obrázok nahraný</p><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)"><img id="uploadPreview" class="upload-preview" src="${result.url}" style="display:block">`;
+    if(zoneText) zoneText.textContent='Obrázok nahraný ✓';
     toast('Obrázok nahraný ✓','success');
   } catch(e){
-    zone.innerHTML='<div style="font-size:2rem">📸</div><p>Kliknite alebo pretiahnite obrázok sem</p><input type="file" id="imgFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)"><img id="uploadPreview" class="upload-preview">';
+    if(zoneText) zoneText.textContent='Kliknite alebo pretiahnite obrázok sem';
     toast(e.message||'Chyba uploadu','error');
   }
 }

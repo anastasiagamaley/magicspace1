@@ -2,6 +2,7 @@
 <html lang="sk">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="/uploads/favicon.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Magic Space | Dula · Joga · Sound Healing | Martin</title>
   <meta name="description" content="Anastasia Gamaley – certifikovaná dula, inštruktorka jogy a sound healing terapeut v Martine. Sprevádzanie pri pôrode, joga pre tehotné, tibetské misky, firemné lekcie.">
@@ -24,7 +25,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#7a6660;--white:#fdfaf8;--gold:#b89a7a; }
+    :root { --rose:#f5e6e0;--blush:#edddd6;--sage:#c8d5c0;--warm:#d4b9a8;--text:#3a2e2a;--text-light:#584840;--white:#fdfaf8;--gold:#b89a7a; }
     html { scroll-behavior: smooth; }
     body { font-family:'Jost',sans-serif;background:var(--white);color:var(--text);font-weight:300;overflow-x:hidden; }
     nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 3rem;background:rgba(253,250,248,0.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(184,154,122,0.12);transition:padding 0.3s; }
@@ -135,7 +136,7 @@
       nav{padding:1.1rem 1.5rem;}
       .nav-links,.nav-cta{display:none;}
       .hamburger{display:block;}
-      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:0.5rem;z-index:90;overflow-y:auto;} nav.menu-open .dropdown-menu{position:static;opacity:1;pointer-events:all;transform:none;box-shadow:none;border:none;background:var(--rose);border-radius:10px;padding:0.3rem 0;margin-top:0.2rem;width:100%;max-width:260px;} nav.menu-open .dropdown{display:flex;flex-direction:column;align-items:center;width:100%;}
       nav.menu-open .nav-cta{display:block;}
       .hero{grid-template-columns:1fr;}
       .hero-right{height:55vw;}
@@ -144,6 +145,9 @@
       .services-intro,.about-grid,.contact-inner{grid-template-columns:1fr;gap:1.5rem;}
     }
   </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
 </head>
 <body>
 
@@ -159,7 +163,7 @@
         <a href="dula.html#kurz">Príprava na pôrod</a>
       </div>
     </li>
-    <li><a href="joga-park.html">Joga v parku</a></li>
+    <li><a href="https://www.magicspace.sk/jogamartin">Joga v parku</a></li>
     <li><a href="soundhealing.html">Sound Healing</a></li>
     <li class="dropdown">
       <a href="firmy.html">Pre firmy</a>
@@ -247,7 +251,7 @@
       </div>
     </a>
 
-    <a href="joga-park.html" class="service-card">
+    <a href="https://www.magicspace.sk/jogamartin" class="service-card">
       <img class="service-card-img" src="/uploads/yoga_park.png" alt="Joga v parku">
       <div class="service-info">
         <h3>Joga v parku</h3>
@@ -270,7 +274,7 @@
         Vyberte sésiu a rezervujte si miesto – počet miest je obmedzený.
       </p>
     </div>
-    <a href="joga-park.html" style="text-decoration:none;background:var(--white);border:1px solid rgba(184,154,122,0.3);border-radius:16px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.8rem;color:var(--text);transition:box-shadow 0.2s" onmouseover="this.style.boxShadow='0 8px 24px rgba(58,46,42,0.08)'" onmouseout="this.style.boxShadow=''">
+    <a href="https://www.magicspace.sk/jogamartin" style="text-decoration:none;background:var(--white);border:1px solid rgba(184,154,122,0.3);border-radius:16px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.8rem;color:var(--text);transition:box-shadow 0.2s" onmouseover="this.style.boxShadow='0 8px 24px rgba(58,46,42,0.08)'" onmouseout="this.style.boxShadow=''">
       <span style="font-size:1.4rem">🌿</span>
       <div><div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">Samostatný projekt</div><div style="font-size:0.88rem;font-weight:400">Joga v parku →</div></div>
     </a>
@@ -282,7 +286,7 @@
 <section class="sec" id="o-mne">
   <div class="about-grid">
     <div class="about-image">
-      <img src="/uploads/priestor.png" alt="Anastasia – Magic Space">
+      <img src="/uploads/me.jpeg" alt="Anastasia – Magic Space">
     </div>
     <div>
       <div class="section-tag">O mne</div>
@@ -369,7 +373,7 @@
   <div class="footer-logo">Magic<span>Space</span></div>
   <div class="footer-links">
     <a href="dula.html">Dula</a>
-    <a href="joga-park.html">Joga v parku</a>
+    <a href="https://www.magicspace.sk/jogamartin">Joga v parku</a>
     <a href="soundhealing.html">Sound Healing</a>
     <a href="firmy.html">Pre firmy</a>
     <a href="#sesie">Sésie</a>

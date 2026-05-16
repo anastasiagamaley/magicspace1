@@ -27,8 +27,10 @@ app = Flask(__name__, static_folder=BASE, static_url_path="")
 # NASTAVENIA – upravujte v súbore .env, nie tu!
 # ════════════════════════════════════════════════════════════════
 ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL",    "")
-GMAIL_USER     = os.getenv("GMAIL_USER",     "")
-GMAIL_PASS     = os.getenv("GMAIL_PASS",     "")
+MAIL_USER      = os.getenv("MAIL_USER",      os.getenv("GMAIL_USER", ""))
+MAIL_PASS      = os.getenv("MAIL_PASS",      os.getenv("GMAIL_PASS", ""))
+MAIL_SERVER    = os.getenv("MAIL_SERVER",    "smtp.gmail.com")
+MAIL_PORT      = int(os.getenv("MAIL_PORT",  "465"))
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 SITE_URL       = os.getenv("SITE_URL",       "http://localhost:5000")
 # ════════════════════════════════════════════════════════════════
@@ -71,6 +73,17 @@ def init_db():
             FOREIGN KEY (session_id) REFERENCES sessions(id)
         );
 
+        CREATE TABLE IF NOT EXISTS reviews (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            page       TEXT NOT NULL,
+            name       TEXT NOT NULL,
+            email      TEXT NOT NULL,
+            stars      INTEGER DEFAULT 5,
+            text       TEXT NOT NULL,
+            status     TEXT DEFAULT 'pending',
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
         CREATE TABLE IF NOT EXISTS contacts (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             name       TEXT NOT NULL,
@@ -83,18 +96,20 @@ def init_db():
         );
         """)
 
-        # Pridať stĺpec image_url ak ešte neexistuje (pre existujúce DB)
-        try:
-            db.execute("ALTER TABLE sessions ADD COLUMN image_url TEXT DEFAULT ''")
-            db.commit()
-        except:
-            pass
-
-        try:
-            db.execute("ALTER TABLE bookings ADD COLUMN reminded INTEGER DEFAULT 0")
-            db.commit()
-        except:
-            pass
+        # Pridať stĺpce ak ešte neexistujú (pre existujúce DB)
+        for col_sql in [
+            "ALTER TABLE sessions ADD COLUMN image_url TEXT DEFAULT ''",
+            "ALTER TABLE sessions ADD COLUMN recur_type TEXT DEFAULT ''",
+            "ALTER TABLE sessions ADD COLUMN recur_until TEXT DEFAULT ''",
+            "ALTER TABLE sessions ADD COLUMN recur_parent_id INTEGER DEFAULT NULL",
+            "ALTER TABLE bookings ADD COLUMN reminded INTEGER DEFAULT 0",
+            "ALTER TABLE bookings ADD COLUMN terms_accepted INTEGER DEFAULT 0",
+        ]:
+            try:
+                db.execute(col_sql)
+                db.commit()
+            except:
+                pass
 
         # Ukážkové sésie
         count = db.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
@@ -128,13 +143,13 @@ def send_email(to_list, subject, html_body):
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"]    = f"MagicSpace <{GMAIL_USER}>"
+            msg["From"]    = f"MagicSpace <{MAIL_USER}>"
             msg["To"]      = ", ".join(to_list)
             msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                server.login(GMAIL_USER, GMAIL_PASS)
-                server.sendmail(GMAIL_USER, to_list, msg.as_string())
+            with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT) as server:
+                server.login(MAIL_USER, MAIL_PASS)
+                server.sendmail(MAIL_USER, to_list, msg.as_string())
             print(f"✉️  Email odoslaný: {subject} → {to_list}")
         except Exception as e:
             print(f"❌  Email chyba: {e}")
@@ -255,6 +270,14 @@ def email_cancellation(booking, session):
     send_email([booking["email"]], f"Zrušenie: {session['title']}", html)
 
 # ─── SCHEDULER – pripomienky 24h pred ────────────────────────
+def cleanup_old_sessions():
+    """Zmaže sésie staršie ako 1 deň."""
+    with get_db() as db:
+        cur = db.execute("DELETE FROM sessions WHERE date < date('now', '-1 day')")
+        db.commit()
+        if cur.rowcount:
+            print(f"🗑  Zmazaných {cur.rowcount} starých sésií")
+
 def check_reminders():
     """Spúšťa sa každú hodinu. Pošle pripomienku 24h pred sesiou."""
     now       = datetime.now()
@@ -283,7 +306,8 @@ def check_reminders():
             print(f"⏰  Poslaných {len(rows)} pripomienok na {tomorrow}")
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(check_reminders, "interval", hours=1)
+scheduler.add_job(check_reminders,       "interval", hours=1)
+scheduler.add_job(cleanup_old_sessions,  "interval", hours=24, next_run_time=datetime.now())
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
@@ -302,6 +326,18 @@ def static_page(page):
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOADS, filename)
+
+@app.route("/jogamartin")
+def jogamartin():
+    return send_from_directory(BASE, "joga-park.html")
+
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory(BASE, "sitemap.xml", mimetype="application/xml")
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory(BASE, "robots.txt", mimetype="text/plain")
 
 # ─── AUTH CHECK ───────────────────────────────────────────────
 @app.route("/api/auth", methods=["POST"])
@@ -332,11 +368,19 @@ def upload_image():
 # ─── API: SÉSIE ───────────────────────────────────────────────
 @app.route("/api/sessions")
 def list_sessions():
-    project = request.args.get("project", "main")
+    project  = request.args.get("project", "main")
+    upcoming = request.args.get("upcoming")   # e.g. "8" → next N future active sessions
     with get_db() as db:
-        rows = db.execute(
-            "SELECT * FROM sessions WHERE project=? ORDER BY date, time", (project,)
-        ).fetchall()
+        if upcoming:
+            rows = db.execute(
+                "SELECT * FROM sessions WHERE project=? AND date >= date('now') AND badge='active'"
+                " ORDER BY date, time LIMIT ?",
+                (project, int(upcoming))
+            ).fetchall()
+        else:
+            rows = db.execute(
+                "SELECT * FROM sessions WHERE project=? ORDER BY date, time", (project,)
+            ).fetchall()
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/sessions", methods=["POST"])
@@ -344,10 +388,14 @@ def create_session():
     data = request.json
     if not all(data.get(k) for k in ["title", "date", "time"]):
         return jsonify({"error": "Chýbajú povinné polia"}), 400
+
+    recur_type  = data.get("recur_type", "")
+    recur_until = data.get("recur_until", "")
+
     with get_db() as db:
         cur = db.execute("""
-            INSERT INTO sessions (title,date,time,duration,spots,price,desc,location,badge,project,image_url)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+            INSERT INTO sessions (title,date,time,duration,spots,price,desc,location,badge,project,image_url,recur_type,recur_until)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             data["title"], data["date"], data["time"],
             data.get("duration", "60 min"),
@@ -358,9 +406,44 @@ def create_session():
             data.get("badge", "active"),
             data.get("project", "main"),
             data.get("image_url", ""),
+            recur_type,
+            recur_until,
         ))
         db.commit()
-        row = db.execute("SELECT * FROM sessions WHERE id=?", (cur.lastrowid,)).fetchone()
+        first_id = cur.lastrowid
+
+        # Generovať opakujúce sa sésie
+        if recur_type in ("weekly", "biweekly"):
+            delta      = timedelta(weeks=1 if recur_type == "weekly" else 2)
+            base_date  = datetime.strptime(data["date"], "%Y-%m-%d")
+            end_date   = datetime.strptime(recur_until, "%Y-%m-%d") if recur_until else base_date + timedelta(weeks=13)
+            cur_date   = base_date + delta
+            while cur_date <= end_date:
+                db.execute("""
+                    INSERT INTO sessions
+                      (title,date,time,duration,spots,price,desc,location,badge,project,image_url,
+                       recur_type,recur_until,recur_parent_id)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """, (
+                    data["title"],
+                    cur_date.strftime("%Y-%m-%d"),
+                    data["time"],
+                    data.get("duration", "60 min"),
+                    int(data.get("spots", 10)),
+                    data.get("price", "0 €"),
+                    data.get("desc", ""),
+                    data.get("location", "Andreja Kmeťa 577/22, Martin"),
+                    "active",
+                    data.get("project", "main"),
+                    data.get("image_url", ""),
+                    recur_type,
+                    recur_until,
+                    first_id,
+                ))
+                cur_date += delta
+            db.commit()
+
+        row = db.execute("SELECT * FROM sessions WHERE id=?", (first_id,)).fetchone()
     return jsonify(dict(row)), 201
 
 @app.route("/api/sessions/<int:sid>", methods=["PUT"])
@@ -381,6 +464,18 @@ def update_session(sid):
 def delete_session(sid):
     with get_db() as db:
         db.execute("DELETE FROM sessions WHERE id=?", (sid,))
+        db.commit()
+    return jsonify({"ok": True})
+
+@app.route("/api/sessions/<int:sid>/recur-group", methods=["DELETE"])
+def delete_recur_group(sid):
+    """Zmaže celú sériu opakujúcich sa sésií."""
+    with get_db() as db:
+        row = db.execute("SELECT recur_parent_id FROM sessions WHERE id=?", (sid,)).fetchone()
+        if not row:
+            return jsonify({"error": "Nenájdená"}), 404
+        parent_id = row["recur_parent_id"] or sid
+        db.execute("DELETE FROM sessions WHERE recur_parent_id=? OR id=?", (parent_id, parent_id))
         db.commit()
     return jsonify({"ok": True})
 
@@ -437,10 +532,11 @@ def create_booking():
                 return jsonify({"error": "Sésia je plná alebo zrušená"}), 409
 
         cur = db.execute("""
-            INSERT INTO bookings (session_id,name,email,phone,note)
-            VALUES (?,?,?,?,?)
+            INSERT INTO bookings (session_id,name,email,phone,note,status,terms_accepted)
+            VALUES (?,?,?,?,?,?,?)
         """, (sid, data["name"], data["email"],
-              data.get("phone",""), data.get("note","")))
+              data.get("phone",""), data.get("note",""), "confirmed",
+              1 if data.get("terms_accepted") else 0))
 
         if sid:
             db.execute("UPDATE sessions SET booked=booked+1 WHERE id=?", (sid,))
@@ -474,6 +570,65 @@ def delete_booking(bid):
         db.execute("DELETE FROM bookings WHERE id=?", (bid,))
         db.commit()
     return jsonify({"ok": True})
+
+# ─── API: KLIENTI ────────────────────────────────────────────
+@app.route("/api/clients")
+def list_clients():
+    """Unikátni klienti zo všetkých rezervácií."""
+    with get_db() as db:
+        rows = db.execute("""
+            SELECT
+                name, email, phone,
+                COUNT(*)                    AS total_bookings,
+                MAX(created_at)             AS last_booking,
+                MAX(terms_accepted)         AS terms_accepted
+            FROM bookings
+            GROUP BY lower(trim(email))
+            ORDER BY last_booking DESC
+        """).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/clients/send-email", methods=["POST"])
+def send_client_email():
+    """Pošle email jednému klientovi alebo všetkým."""
+    data    = request.json or {}
+    subject = data.get("subject", "").strip()
+    message = data.get("message", "").strip()
+    to      = data.get("to", "")   # email alebo "all"
+
+    if not subject or not message:
+        return jsonify({"error": "Chýba predmet alebo správa"}), 400
+
+    html_body = f"""
+    <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#3a2e2a">
+      <div style="background:#f5e6e0;padding:2rem;text-align:center;border-radius:12px 12px 0 0">
+        <h1 style="font-weight:300;font-size:1.8rem;margin:0">&#10027; Magic<span style="color:#b89a7a">Space</span></h1>
+      </div>
+      <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
+        {message.replace(chr(10), '<br>')}
+        <p style="color:#7a6660;font-size:0.85rem;margin-top:2rem">
+          Anastasia &middot; MagicSpace &middot;
+          <a href="mailto:{ADMIN_EMAIL}" style="color:#b89a7a">{ADMIN_EMAIL}</a>
+        </p>
+      </div>
+    </div>"""
+
+    with get_db() as db:
+        if to == "all":
+            rows = db.execute(
+                "SELECT DISTINCT lower(trim(email)) AS email FROM bookings"
+            ).fetchall()
+            recipients = [r["email"] for r in rows if r["email"]]
+        else:
+            recipients = [to]
+
+    if not recipients:
+        return jsonify({"error": "Žiadni príjemcovia"}), 400
+
+    for addr in recipients:
+        send_email([addr], subject, html_body)
+
+    return jsonify({"ok": True, "sent": len(recipients)})
 
 # ─── API: KONTAKTY ────────────────────────────────────────────
 @app.route("/api/contacts")
@@ -513,6 +668,51 @@ def mark_contact_read(cid):
         db.commit()
     return jsonify({"ok": True})
 
+# ─── API: RECENZIE ───────────────────────────────────────────
+@app.route("/api/reviews")
+def list_reviews():
+    page = request.args.get("page", "dula")
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT id,name,stars,text,created_at FROM reviews WHERE page=? AND status='approved' ORDER BY created_at DESC",
+            (page,)
+        ).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/reviews/admin")
+def list_reviews_admin():
+    with get_db() as db:
+        rows = db.execute("SELECT * FROM reviews ORDER BY created_at DESC").fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/reviews", methods=["POST"])
+def create_review():
+    data = request.json or {}
+    if not data.get("name") or not data.get("text") or not data.get("page"):
+        return jsonify({"error": "Chýbajú povinné polia"}), 400
+    stars = max(1, min(5, int(data.get("stars", 5))))
+    with get_db() as db:
+        db.execute(
+            "INSERT INTO reviews (page,name,email,stars,text) VALUES (?,?,?,?,?)",
+            (data["page"], data["name"], data.get("email",""), stars, data["text"])
+        )
+        db.commit()
+    return jsonify({"ok": True}), 201
+
+@app.route("/api/reviews/<int:rid>/approve", methods=["POST"])
+def approve_review(rid):
+    with get_db() as db:
+        db.execute("UPDATE reviews SET status='approved' WHERE id=?", (rid,))
+        db.commit()
+    return jsonify({"ok": True})
+
+@app.route("/api/reviews/<int:rid>", methods=["DELETE"])
+def delete_review(rid):
+    with get_db() as db:
+        db.execute("DELETE FROM reviews WHERE id=?", (rid,))
+        db.commit()
+    return jsonify({"ok": True})
+
 # ─── STATS ───────────────────────────────────────────────────
 @app.route("/api/stats")
 def stats():
@@ -547,7 +747,7 @@ if __name__ == "__main__":
     print("   Admin: http://localhost:5000/admin.html")
     print("\n📧 Email nastavenia:")
     print(f"   Admin email: {ADMIN_EMAIL}")
-    if "xxxx" in GMAIL_PASS:
+    if not MAIL_PASS or "xxxx" in MAIL_PASS:
         print("   ⚠️  GMAIL_PASS nie je nastavené – emaily nebudú fungovať")
         print("   → Návod: https://support.google.com/accounts/answer/185833")
     print("\n   Zastavte: Ctrl+C\n")

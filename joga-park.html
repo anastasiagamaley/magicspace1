@@ -2,6 +2,7 @@
 <html lang="sk">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="/uploads/favicon.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Joga v parku Martin – letné lekcie vonku | Magic Space</title>
   <meta name="description" content="Letné lekcie jogy v parku v Martine – pred Múzeom. Každý týždeň, pre začiatočníkov aj pokročilých. Bezplatne alebo dobrovoľný príspevok.">
@@ -17,7 +18,7 @@
   <meta property="og:locale" content="sk_SK">
   <meta property="og:site_name" content="Magic Space">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Event","name":"Joga v parku Martin","description":"Letné lekcie jogy na schodoch pred Múzeom v Martine. Pre začiatočníkov aj pokročilých.","location":{"@type":"Place","name":"Schody pred Múzeom, Martin","address":{"@type":"PostalAddress","addressLocality":"Martin","addressCountry":"SK"}},"organizer":{"@type":"LocalBusiness","name":"Magic Space","url":"https://magicspace.sk"},"eventStatus":"https://schema.org/EventScheduled","isAccessibleForFree":true}
+  {"@context":"https://schema.org","@type":"Event","name":"Joga v parku Martin","description":"Letné lekcie jogy na schodoch pred Múzeom v Martine. Pre začiatočníkov aj pokročilých.","location":{"@type":"Place","name":"Schody pred SNM, Martin","address":{"@type":"PostalAddress","addressLocality":"Martin","addressCountry":"SK"}},"organizer":{"@type":"LocalBusiness","name":"Magic Space","url":"https://magicspace.sk"},"eventStatus":"https://schema.org/EventScheduled","isAccessibleForFree":true}
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -131,7 +132,7 @@
       nav{padding:1.1rem 1.5rem;}
       .nav-links,.nav-cta{display:none;}
       .hamburger{display:block;}
-      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:1.5rem;z-index:90;}
+      nav.menu-open .nav-links{display:flex;flex-direction:column;position:fixed;inset:0;top:58px;background:var(--white);padding:2rem;align-items:center;justify-content:center;gap:0.5rem;z-index:90;overflow-y:auto;} nav.menu-open .dropdown-menu{position:static;opacity:1;pointer-events:all;transform:none;box-shadow:none;border:none;background:var(--rose);border-radius:10px;padding:0.3rem 0;margin-top:0.2rem;width:100%;max-width:260px;} nav.menu-open .dropdown{display:flex;flex-direction:column;align-items:center;width:100%;}
       nav.menu-open .nav-cta{display:block;}
       .hero-deco{display:none;}
       .hero-content{padding-top:6rem;}
@@ -140,6 +141,9 @@
       .map-strip{flex-direction:column;text-align:center;}
     }
   </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
 </head>
 <body>
 
@@ -174,11 +178,21 @@
 
 <!-- INFO BAND -->
 <div class="info-band">
-  <div class="info-item"><div class="info-icon">📍</div><div class="info-label">Miesto</div><div class="info-val">Schody pred Múzeom, Martin</div></div>
+  <div class="info-item"><div class="info-icon">📍</div><div class="info-label">Miesto</div><div class="info-val">Schody pred SNM, Martin</div></div>
   <div class="info-item"><div class="info-icon">📅</div><div class="info-label">Termíny</div><div class="info-val">Jún – September</div></div>
-  <div class="info-item"><div class="info-icon">🕐</div><div class="info-label">Čas</div><div class="info-val">Stredy 7:00 & 18:00</div></div>
   <div class="info-item"><div class="info-icon">💰</div><div class="info-label">Cena</div><div class="info-val">Bezplatne / dobrovoľný príspevok</div></div>
   <div class="info-item"><div class="info-icon">🧘</div><div class="info-label">Pre koho</div><div class="info-val">Úplne každý</div></div>
+</div>
+
+<!-- WEATHER WIDGET -->
+<div id="weatherWidget" style="background:linear-gradient(135deg,#d6e5d0,#e8f4e0);padding:1.2rem 5vw;display:flex;align-items:center;gap:1.8rem;flex-wrap:wrap;border-bottom:1px solid rgba(122,158,110,0.15)">
+  <div style="font-size:3rem;line-height:1" id="wIcon">⏳</div>
+  <div>
+    <div style="font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:#5a7e4e;margin-bottom:0.1rem">Počasie dnes · Martin</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:#2a3328;line-height:1" id="wTemp">–</div>
+    <div style="font-size:0.82rem;color:#5a6e5a;margin-top:0.2rem" id="wDesc"></div>
+  </div>
+  <div style="margin-left:auto;background:rgba(255,255,255,0.55);border-radius:12px;padding:0.6rem 1.1rem;font-size:0.78rem;color:#3a4a38;backdrop-filter:blur(6px)" id="wExtra"></div>
 </div>
 
 <!-- O PROJEKTE -->
@@ -219,15 +233,16 @@
 <section class="sec" id="kde" style="background:var(--white2)">
   <div class="section-tag">Miesto</div>
   <h2 class="section-title">Kde nás<br><em>nájdete</em></h2>
-  <p class="body-text" style="margin-bottom:2rem">Stretneme sa na schodoch pred Múzeom v Martine. Príďte 5 minút pred začiatkom, prinesie podložku a vodu.</p>
+  <p class="body-text" style="margin-bottom:2rem">Stretneme sa na schodoch pred Slovenským národným múzeom v Martine. Príďte 5 minút pred začiatkom, prinesie podložku a vodu.</p>
   <div style="background:var(--green);border-radius:20px;padding:2rem;display:inline-flex;gap:2rem;flex-wrap:wrap;align-items:center">
     <div>
       <div class="section-tag" style="margin-bottom:0.4rem">Adresa</div>
-      <p style="font-size:0.9rem">Schody pred Múzeom, Martin<br><span style="color:var(--text-light);font-size:0.82rem">Schody pred Slovenským múzeom prírody</span></p>
-    </div>
-    <div>
-      <div class="section-tag" style="margin-bottom:0.4rem">Čas stretnutia</div>
-      <p style="font-size:0.9rem">Stredy 7:00 (ráno)<br>Stredy 18:00 (večer)</p>
+      <p style="font-size:0.9rem">Schody pred SNM, Martin<br><span style="color:var(--text-light);font-size:0.82rem">Schody pred Slovenským národným múzeom</span></p>
+      <a href="https://maps.google.com/?q=Slovenské+národné+múzeum+Martin" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.9rem;background:var(--gold);color:var(--white);padding:0.55rem 1.2rem;border-radius:50px;text-decoration:none;font-size:0.76rem;letter-spacing:0.08em;text-transform:uppercase;transition:background 0.2s"
+         onmouseover="this.style.background='#5a7e4e'" onmouseout="this.style.background='var(--gold)'">
+        🗺 Otvoriť v Mapách
+      </a>
     </div>
     <div>
       <div class="section-tag" style="margin-bottom:0.4rem">Čo priniesť</div>
@@ -246,6 +261,41 @@
     <a href="index.html" style="color:rgba(248,252,246,0.7);text-decoration:none;font-size:0.88rem;align-self:center">← Späť na MagicSpace</a>
   </div>
 </div>
+
+<!-- RECENZIE -->
+<section class="sec" style="background:var(--white2)">
+  <div style="max-width:900px;margin:0 auto">
+    <div class="section-tag">Recenzie</div>
+    <h2 class="section-title">Čo hovoria<br><em>účastníci</em></h2>
+    <p class="body-text" style="margin-bottom:2.5rem">Skutočné skúsenosti z lekcií v parku.</p>
+    <div id="parkReviews" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;margin-bottom:3rem"></div>
+
+    <div style="background:var(--green);border-radius:20px;padding:2rem 2.2rem;max-width:500px">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;margin-bottom:1.2rem;color:var(--text)">Zanechajte recenziu</h3>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.35rem">Meno *</label>
+        <input id="prName" type="text" placeholder="Jana Nováková" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(122,158,110,0.3);border-radius:10px;background:var(--white2);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);outline:none">
+      </div>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.35rem">E-mail (neverejný)</label>
+        <input id="prEmail" type="email" placeholder="jana@email.sk" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(122,158,110,0.3);border-radius:10px;background:var(--white2);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);outline:none">
+      </div>
+      <div style="margin-bottom:0.9rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.5rem">Hodnotenie *</label>
+        <div id="prStars" style="display:flex;gap:0.4rem;font-size:1.6rem;cursor:pointer">
+          <span data-v="1">☆</span><span data-v="2">☆</span><span data-v="3">☆</span><span data-v="4">☆</span><span data-v="5">☆</span>
+        </div>
+        <input type="hidden" id="prStarsVal" value="0">
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label style="display:block;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.35rem">Vaša skúsenosť *</label>
+        <textarea id="prText" rows="3" placeholder="Pár slov o lekcii v parku…" style="width:100%;padding:0.7rem 1rem;border:1px solid rgba(122,158,110,0.3);border-radius:10px;background:var(--white2);font-family:'Jost',sans-serif;font-size:0.88rem;color:var(--text);resize:vertical;outline:none"></textarea>
+      </div>
+      <button onclick="submitParkReview()" class="btn-primary">Odoslať recenziu</button>
+      <p id="prMsg" style="font-size:0.82rem;color:var(--text-light);margin-top:0.8rem;display:none">✓ Ďakujeme! Recenzia bude zverejnená po schválení.</p>
+    </div>
+  </div>
+</section>
 
 <footer>
   <div class="footer-logo">Joga v <span>Parku</span></div>
@@ -270,6 +320,12 @@
       <div class="fg"><label>E-mail</label><input type="email" required id="bEmail" placeholder="jana@email.sk"></div>
       <div class="fg"><label>Telefón</label><input type="tel" required id="bPhone" placeholder="09xx xxx xxx"></div>
       <div class="fg"><label>Poznámka</label><textarea id="bNote" placeholder="Prvýkrát? Nejaké zranenia?…"></textarea></div>
+      <div class="fg" style="margin-bottom:1.4rem">
+        <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;font-size:0.83rem;color:var(--text-light);text-transform:none;letter-spacing:0">
+          <input type="checkbox" id="bTerms" required style="margin-top:0.2rem;width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;">
+          <span>Súhlasím s <a href="/podmienky-joga.html" target="_blank" style="color:var(--gold);text-decoration:underline">podmienkami účasti a vyhlásením o zodpovednosti</a></span>
+        </label>
+      </div>
       <button type="submit" class="btn-book">Potvrdiť miesto</button>
       <div class="form-success" id="bookSuccess">🌿 Rezervácia odoslaná! Tešíme sa na vás.</div>
     </form>
@@ -283,7 +339,7 @@ async function renderParkSessions() {
   if (!grid) return;
   grid.innerHTML = '<p style="color:var(--text-light);padding:1rem">Načítavam lekcie…</p>';
   try {
-    const sessions = await API.getSessions('park');
+    const sessions = await API.getSessions('park', {upcoming: 8});
     if (!sessions.length) { grid.innerHTML = '<p style="color:var(--text-light)">Momentálne žiadne lekcie. Sledujte nás na Instagrame.</p>'; return; }
     grid.innerHTML = sessions.map(s => {
       const isFull = s.booked >= s.spots || s.badge === 'full';
@@ -308,15 +364,15 @@ function openBooking(id) {
   document.getElementById('bookSuccess').style.display = 'none';
   document.getElementById('bookingModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  API.getSessions('park').then(sessions => {
+  API.getSessions('park', {upcoming: 8}).then(sessions => {
     const s = sessions.find(x => x.id === id);
     if (s) {
       document.getElementById('modalTitle').textContent = s.title;
-      document.getElementById('modalMeta').textContent = `📅 ${new Date(s.date).toLocaleDateString('sk-SK',{day:'numeric',month:'long'})}  ·  🕐 ${s.time}  ·  📍 Park pri Kotline`;
+      document.getElementById('modalMeta').textContent = `📅 ${new Date(s.date).toLocaleDateString('sk-SK',{day:'numeric',month:'long'})}  ·  🕐 ${s.time}  ·  📍 Schody pred SNM`;
     }
   });
 }
-function closeModal() { document.getElementById('bookingModal').classList.remove('open'); document.body.style.overflow=''; }
+function closeModal() { document.getElementById('bookingModal').classList.remove('open'); document.body.style.overflow=''; document.getElementById('bTerms').checked=false; }
 document.getElementById('bookingModal').addEventListener('click', e => { if (e.target===e.currentTarget) closeModal(); });
 
 async function submitBooking(e) {
@@ -325,11 +381,12 @@ async function submitBooking(e) {
   btn.disabled=true; btn.textContent='Odosielam…';
   try {
     await API.createBooking({
-      session_id: aId,
-      name:  document.getElementById('bName').value,
-      email: document.getElementById('bEmail').value,
-      phone: document.getElementById('bPhone').value,
-      note:  document.getElementById('bNote').value,
+      session_id:     aId,
+      name:           document.getElementById('bName').value,
+      email:          document.getElementById('bEmail').value,
+      phone:          document.getElementById('bPhone').value,
+      note:           document.getElementById('bNote').value,
+      terms_accepted: document.getElementById('bTerms').checked ? 1 : 0,
     });
     document.getElementById('bookSuccess').style.display='block';
     setTimeout(()=>{ closeModal(); renderParkSessions(); e.target.reset(); btn.disabled=false; btn.textContent='Potvrdiť miesto'; }, 2600);
@@ -339,6 +396,80 @@ async function submitBooking(e) {
 window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});
 document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mainNav').classList.toggle('menu-open');});
 renderParkSessions();
+
+// Recenzie
+(async()=>{
+  const box=document.getElementById('parkReviews');
+  try{
+    const list=await API.getReviews('park');
+    if(!list.length){box.innerHTML='<p style="color:var(--text-light);font-size:0.88rem">Zatiaľ žiadne recenzie.</p>';return;}
+    box.innerHTML=list.map(r=>`<div style="background:var(--white2);border-radius:16px;padding:1.4rem 1.6rem;border:1px solid rgba(122,158,110,0.2)">
+      <div style="color:#7a9e6e;font-size:1.1rem;margin-bottom:0.5rem">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <p style="font-size:0.88rem;color:var(--text);line-height:1.7;margin-bottom:0.8rem">"${r.text}"</p>
+      <strong style="font-size:0.8rem;color:var(--text-light)">${r.name}</strong>
+    </div>`).join('');
+  }catch(e){box.innerHTML='';}
+})();
+let prStarsVal=0;
+document.getElementById('prStars').querySelectorAll('span').forEach(s=>{
+  s.addEventListener('mouseenter',()=>{
+    document.getElementById('prStars').querySelectorAll('span').forEach((x,i)=>x.textContent=i<parseInt(s.dataset.v)?'★':'☆');
+  });
+  s.addEventListener('click',()=>{
+    prStarsVal=parseInt(s.dataset.v);
+    document.getElementById('prStarsVal').value=prStarsVal;
+  });
+});
+document.getElementById('prStars').addEventListener('mouseleave',()=>{
+  document.getElementById('prStars').querySelectorAll('span').forEach((x,i)=>x.textContent=i<prStarsVal?'★':'☆');
+});
+async function submitParkReview(){
+  const name=document.getElementById('prName').value.trim();
+  const text=document.getElementById('prText').value.trim();
+  const stars=parseInt(document.getElementById('prStarsVal').value)||0;
+  if(!name||!text||!stars){alert('Vyplňte meno, hodnotenie a text.');return;}
+  await API.createReview({page:'park',name,email:document.getElementById('prEmail').value,stars,text});
+  document.getElementById('prMsg').style.display='block';
+  document.getElementById('prName').value='';document.getElementById('prEmail').value='';
+  document.getElementById('prText').value='';prStarsVal=0;
+  document.getElementById('prStars').querySelectorAll('span').forEach(x=>x.textContent='☆');
+}
+
+// Počasie – Open-Meteo (bezplatné, bez API kľúča)
+async function loadWeather(){
+  const WMO = {
+    0:'Jasno',1:'Takmer jasno',2:'Čiastočne oblačno',3:'Zamračené',
+    45:'Hmla',48:'Námraza',
+    51:'Mrholenie',53:'Mrholenie',55:'Silné mrholenie',
+    61:'Dážď',63:'Dážď',65:'Silný dážď',
+    71:'Sneh',73:'Sneh',75:'Silný sneh',
+    80:'Prehánky',81:'Prehánky',82:'Silné prehánky',
+    95:'Búrka',96:'Búrka s krupobitím',99:'Silná búrka',
+  };
+  const ICO = {
+    0:'☀️',1:'🌤',2:'⛅',3:'☁️',
+    45:'🌫',48:'🌫',
+    51:'🌦',53:'🌦',55:'🌧',
+    61:'🌧',63:'🌧',65:'🌧',
+    71:'🌨',73:'❄️',75:'❄️',
+    80:'🌦',81:'🌦',82:'⛈',
+    95:'⛈',96:'⛈',99:'⛈',
+  };
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.065&longitude=18.922&current=temperature_2m,weather_code,wind_speed_10m&timezone=Europe%2FBratislava');
+    const d = await r.json();
+    const c = d.current;
+    const code = c.weather_code;
+    document.getElementById('wIcon').textContent = ICO[code] || '🌡';
+    document.getElementById('wTemp').textContent = Math.round(c.temperature_2m) + ' °C';
+    document.getElementById('wDesc').textContent = WMO[code] || '';
+    document.getElementById('wExtra').textContent = '💨 ' + Math.round(c.wind_speed_10m) + ' km/h';
+  } catch(e) {
+    document.getElementById('wIcon').textContent = '🌡';
+    document.getElementById('wTemp').textContent = '–';
+  }
+}
+loadWeather();
 </script>
 
 <!-- Cookie consent popup -->
