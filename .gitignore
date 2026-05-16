@@ -17,6 +17,9 @@ env/
 # Uploads (voliteľné – ak nechcete fotky v gite, odkomentujte)
 # uploads/
 
+# Claude memory (contains server credentials)
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
