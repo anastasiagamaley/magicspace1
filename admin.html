@@ -362,7 +362,7 @@
     <div class="form-grid">
       <div class="fg form-full"><label>Názov sésie *</label><input type="text" id="s_title" placeholder="Sound Healing"></div>
       <div class="fg"><label>Dátum *</label><input type="date" id="s_date"></div>
-      <div class="fg"><label>Čas *</label><input type="time" id="s_time"></div>
+      <div class="fg"><label>Čas * (napr. 10:00)</label><input type="text" id="s_time" placeholder="10:00"></div>
       <div class="fg"><label>Trvanie</label><input type="text" id="s_duration" placeholder="90 min"></div>
       <div class="fg"><label>Cena</label><input type="text" id="s_price" placeholder="20 €"></div>
       <div class="fg"><label>Počet miest</label><input type="number" id="s_spots" placeholder="10" min="1" max="200"></div>
@@ -753,7 +753,14 @@ async function saveSession(){
     recur_type: document.getElementById('s_recur_type').value,
     recur_until:document.getElementById('s_recur_until').value,
   };
-  if(!data.title||!data.date||!data.time){ toast('Vyplňte názov, dátum a čas','error'); return; }
+  if(!data.title||!data.date||!data.time){
+    const missing=[];
+    if(!data.title) missing.push('názov');
+    if(!data.date)  missing.push('dátum');
+    if(!data.time)  missing.push('čas');
+    toast('Vyplňte: '+missing.join(', '),'error');
+    return;
+  }
   const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Ukladám…';
   try{
     if(editingId) await API.updateSession(editingId,data);
