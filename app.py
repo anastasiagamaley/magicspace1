@@ -4,14 +4,15 @@ Spustite:  python app.py
 Otvorte:   http://localhost:5000
 """
 
-from flask import Flask, jsonify, request, send_from_directory, abort
-import sqlite3, os, json, smtplib, threading
+from flask import Flask, jsonify, request, send_from_directory, abort, redirect
+import sqlite3, os, json, smtplib, threading, base64, secrets
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 import atexit
+from services.telegram import create_invite_link, handle_update
 
 BASE    = os.path.dirname(os.path.abspath(__file__))
 DB      = os.path.join(BASE, "magicspace.db")
@@ -94,6 +95,24 @@ def init_db():
             status     TEXT DEFAULT 'new',
             created_at TEXT DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            email      TEXT NOT NULL UNIQUE,
+            due_date   TEXT DEFAULT '',
+            consent_at TEXT DEFAULT (datetime('now')),
+            source     TEXT DEFAULT 'landing',
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS purchases (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            email      TEXT NOT NULL,
+            product    TEXT NOT NULL,
+            status     TEXT DEFAULT 'pending',
+            token      TEXT NOT NULL UNIQUE,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
         """)
 
         # Pridať stĺpce ak ešte neexistujú (pre existujúce DB)
@@ -104,6 +123,16 @@ def init_db():
             "ALTER TABLE sessions ADD COLUMN recur_parent_id INTEGER DEFAULT NULL",
             "ALTER TABLE bookings ADD COLUMN reminded INTEGER DEFAULT 0",
             "ALTER TABLE bookings ADD COLUMN terms_accepted INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN nurture_step INTEGER DEFAULT 1",
+            "ALTER TABLE subscribers ADD COLUMN next_nurture_at TEXT DEFAULT ''",
+            "ALTER TABLE subscribers ADD COLUMN unsubscribed INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN kurz_interest_at TEXT DEFAULT ''",
+            "ALTER TABLE subscribers ADD COLUMN cart_email_sent INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN guide_interest_at TEXT DEFAULT ''",
+            "ALTER TABLE subscribers ADD COLUMN guide_cart_sent INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN bundle_cart_sent INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN cart_all_sent INTEGER DEFAULT 0",
+            "ALTER TABLE subscribers ADD COLUMN kurz_confirmed INTEGER DEFAULT 0",
         ]:
             try:
                 db.execute(col_sql)
@@ -177,6 +206,11 @@ def email_booking_client(booking, session):
         </div>
         <p style="color:#7a6660;font-size:0.9rem">V prípade otázok ma kontaktuj na <a href="mailto:{ADMIN_EMAIL}" style="color:#b89a7a">{ADMIN_EMAIL}</a></p>
         <p style="color:#7a6660;font-size:0.9rem">Anastasia · MagicSpace</p>
+        <hr style="border:none;border-top:1px solid #edddd6;margin:1.5rem 0">
+        <p style="color:#b0a099;font-size:0.8rem">Nemôžeš prísť?
+          <a href="{SITE_URL}/api/bookings/cancel?email={booking['email']}&sid={booking['session_id']}"
+             style="color:#b89a7a">Zrušiť rezerváciu jedným kliknutím →</a>
+        </p>
       </div>
     </div>"""
     send_email([booking["email"]], f"Rezervácia: {session['title'] if session else 'MagicSpace'}", html)
@@ -248,6 +282,28 @@ def email_reminder(booking, session):
       </div>
     </div>"""
     send_email([booking["email"]], f"Pripomienka: {session['title']} – zajtra!", html)
+
+def email_client_cancelled(booking, session):
+    """Email klientovi – potvrdenie jeho vlastného zrušenia rezervácie."""
+    date_fmt = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%-d. %-m. %Y") if session else ""
+    html = f"""
+    <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#3a2e2a">
+      <div style="background:#d6e5d0;padding:2rem;text-align:center;border-radius:12px 12px 0 0">
+        <h1 style="font-weight:300;font-size:1.6rem;margin:0">Rezervácia zrušená</h1>
+      </div>
+      <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #d6e5d0">
+        <p>Ahoj <strong>{booking["name"]}</strong>,</p>
+        <p>tvoja rezervácia bola úspešne zrušená. Ďakujeme, že si nám dala vedieť – miesto sme uvoľnili pre iného záujemcu.</p>
+        <div style="background:#d6e5d0;border-radius:10px;padding:1.2rem;margin:1.5rem 0">
+          <strong>{session["title"] if session else ""}</strong><br>
+          📅 {date_fmt} &nbsp;·&nbsp; 🕐 {session["time"] if session else ""}
+        </div>
+        <p>Ak si to rozmyslíš, rezervuj si miesto znova:</p>
+        <a href="{SITE_URL}/joga-park.html#lekcie" style="display:inline-block;background:#7a9e6e;color:#fff;padding:0.7rem 1.5rem;border-radius:50px;text-decoration:none;font-size:0.85rem">Rezervovať znova →</a>
+        <p style="color:#7a6660;font-size:0.9rem;margin-top:1.5rem">Anastasia · MagicSpace · <a href="mailto:{ADMIN_EMAIL}" style="color:#b89a7a">{ADMIN_EMAIL}</a></p>
+      </div>
+    </div>"""
+    send_email([booking["email"]], f"Zrušenie rezervácie: {session['title'] if session else 'MagicSpace'}", html)
 
 def email_cancellation(booking, session):
     """Email klientovi o zrušení sésie."""
@@ -571,6 +627,74 @@ def delete_booking(bid):
         db.commit()
     return jsonify({"ok": True})
 
+@app.route("/api/bookings/cancel-by-email", methods=["POST"])
+def cancel_by_email():
+    """Klient zruší svoju rezerváciu podľa emailu (z formulára na stránke)."""
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    if not email or "@" not in email:
+        return jsonify({"error": "Zadajte platný e-mail"}), 400
+    sid = data.get("session_id")
+    with get_db() as db:
+        if sid:
+            rows = db.execute(
+                """SELECT b.*, s.title, s.date, s.time FROM bookings b
+                   LEFT JOIN sessions s ON b.session_id=s.id
+                   WHERE lower(trim(b.email))=? AND b.session_id=? AND b.status!='cancelled'""",
+                (email, sid)
+            ).fetchall()
+        else:
+            rows = db.execute(
+                """SELECT b.*, s.title, s.date, s.time FROM bookings b
+                   LEFT JOIN sessions s ON b.session_id=s.id
+                   WHERE lower(trim(b.email))=? AND b.status!='cancelled'
+                     AND (s.date IS NULL OR s.date >= date('now'))""",
+                (email,)
+            ).fetchall()
+        if not rows:
+            return jsonify({"cancelled": 0, "message": "Rezervácia na tento e-mail nebola nájdená"})
+        for row in rows:
+            db.execute("UPDATE bookings SET status='cancelled' WHERE id=?", (row["id"],))
+            if row["session_id"]:
+                db.execute("UPDATE sessions SET booked=MAX(booked-1,0) WHERE id=?", (row["session_id"],))
+            email_client_cancelled(dict(row), dict(row))
+        db.commit()
+    return jsonify({"cancelled": len(rows), "message": "Rezervácia bola zrušená"})
+
+@app.route("/api/bookings/cancel")
+def cancel_by_link():
+    """One-click zrušenie z emailu: /api/bookings/cancel?email=X&sid=Y"""
+    email = (request.args.get("email") or "").strip().lower()
+    sid   = request.args.get("sid", type=int)
+    ok, msg = False, "Rezervácia nenájdená"
+    if email and sid:
+        with get_db() as db:
+            row = db.execute(
+                """SELECT b.*, s.title, s.date, s.time FROM bookings b
+                   LEFT JOIN sessions s ON b.session_id=s.id
+                   WHERE lower(trim(b.email))=? AND b.session_id=? AND b.status!='cancelled'""",
+                (email, sid)
+            ).fetchone()
+            if row:
+                db.execute("UPDATE bookings SET status='cancelled' WHERE id=?", (row["id"],))
+                db.execute("UPDATE sessions SET booked=MAX(booked-1,0) WHERE id=?", (sid,))
+                db.commit()
+                email_client_cancelled(dict(row), dict(row))
+                ok, msg = True, "Rezervácia bola zrušená"
+    color  = "#7a9e6e" if ok else "#c0a090"
+    icon   = "✓" if ok else "✗"
+    return f"""<!DOCTYPE html><html lang="sk"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{msg} · Magic Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+    </head><body style="margin:0;background:#f0f4ee;font-family:'Jost',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <div style="background:#fdfaf8;border-radius:24px;padding:3rem 2.5rem;max-width:420px;width:90%;text-align:center;box-shadow:0 4px 32px rgba(42,51,40,0.08)">
+      <div style="width:64px;height:64px;border-radius:50%;background:{color};color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem">{icon}</div>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2rem;color:#2a3328;margin:0 0 0.8rem">{msg}</h1>
+      <p style="color:#5a6e5a;font-size:0.9rem;line-height:1.7;margin:0 0 2rem">{"Ďakujeme, že si nám dal(a) vedieť. Miesto sme uvoľnili pre iného záujemcu." if ok else "Rezervácia nebola nájdená alebo už bola zrušená."}</p>
+      <a href="{SITE_URL}/joga-park.html" style="display:inline-block;background:#7a9e6e;color:#fff;text-decoration:none;padding:0.85rem 2rem;border-radius:50px;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">Späť na stránku →</a>
+    </div></body></html>"""
+
 # ─── API: KLIENTI ────────────────────────────────────────────
 @app.route("/api/clients")
 def list_clients():
@@ -668,6 +792,300 @@ def mark_contact_read(cid):
         db.commit()
     return jsonify({"ok": True})
 
+# ─── KURZ CLICK TRACKING ─────────────────────────────────────
+BUNDLE_SUMUP_URL = os.getenv("BUNDLE_SUMUP_URL", "https://pay.sumup.com/b2c/QLZBCS4G")
+
+
+@app.route("/go/bundle")
+def go_bundle():
+    e = request.args.get("e", "")
+    if e:
+        try:
+            email = base64.urlsafe_b64decode(e + "==").decode()
+            with get_db() as db:
+                db.execute(
+                    "UPDATE subscribers SET kurz_interest_at=COALESCE(NULLIF(kurz_interest_at,''),?), guide_interest_at=COALESCE(NULLIF(guide_interest_at,''),?) WHERE email=?",
+                    [datetime.now().isoformat(), datetime.now().isoformat(), email]
+                )
+                db.commit()
+        except Exception:
+            pass
+    return redirect(BUNDLE_SUMUP_URL)
+
+
+@app.route("/go/partner-guide")
+def go_partner_guide():
+    e = request.args.get("e", "")
+    if e:
+        try:
+            email = base64.urlsafe_b64decode(e + "==").decode()
+            with get_db() as db:
+                db.execute(
+                    "UPDATE subscribers SET guide_interest_at=? WHERE email=? AND (guide_interest_at IS NULL OR guide_interest_at='')",
+                    [datetime.now().isoformat(), email]
+                )
+                db.commit()
+        except Exception:
+            pass
+    return redirect("https://pay.sumup.com/b2c/QC3SD8JE")
+
+
+@app.route("/go/kurz")
+def go_kurz():
+    e = request.args.get("e", "")
+    if e:
+        try:
+            email = base64.urlsafe_b64decode(e + "==").decode()
+            with get_db() as db:
+                db.execute(
+                    "UPDATE subscribers SET kurz_interest_at=? WHERE email=? AND (kurz_interest_at IS NULL OR kurz_interest_at='')",
+                    [datetime.now().isoformat(), email]
+                )
+                db.commit()
+        except Exception:
+            pass
+    return redirect(f"{SITE_URL}/kurz.html")
+
+# ─── API: PRE-CHECKOUT & CONFIRM ─────────────────────────────
+SUMUP_URLS = {
+    "kurz":   "https://pay.sumup.com/b2c/Q51A04KE",
+    "bundle": "https://pay.sumup.com/b2c/QLZBCS4G",
+    "guide":  "https://pay.sumup.com/b2c/QC3SD8JE",
+}
+PRODUCT_NAMES = {
+    "kurz":   "Kurz prípravy na pôrod (59 €)",
+    "bundle": "Kurz + Manuál pre partnera (67 €)",
+    "guide":  "Manuál pre partnera – PDF (15 €)",
+}
+
+
+@app.route("/api/pre-checkout", methods=["POST"])
+def pre_checkout():
+    data    = request.get_json(silent=True) or {}
+    email   = (data.get("email") or "").strip().lower()
+    product = (data.get("product") or "kurz").strip()
+    if not email or "@" not in email or product not in SUMUP_URLS:
+        return jsonify({"redirect": SUMUP_URLS.get(product, SUMUP_URLS["kurz"])}), 200
+
+    token = secrets.token_urlsafe(24)
+    with get_db() as db:
+        db.execute(
+            "INSERT INTO purchases (email, product, token) VALUES (?,?,?)",
+            (email, product, token)
+        )
+        db.commit()
+
+    confirm_url = f"{SITE_URL}/api/confirm-payment?token={token}"
+    product_name = PRODUCT_NAMES.get(product, product)
+    admin_html = f"""
+    <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;color:#3a2e2a">
+      <div style="background:#3a2e2a;padding:1.5rem 2rem;border-radius:12px 12px 0 0">
+        <h2 style="color:#fdfaf8;font-weight:300;font-size:1.3rem;margin:0">
+          Nová platba – skontroluj SumUp
+        </h2>
+      </div>
+      <div style="background:#fdfaf8;padding:1.8rem 2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:0.4rem 0;color:#8a7f78;width:100px">Email</td>
+              <td><strong>{email}</strong></td></tr>
+          <tr><td style="padding:0.4rem 0;color:#8a7f78">Produkt</td>
+              <td><strong>{product_name}</strong></td></tr>
+        </table>
+        <p style="margin:1.2rem 0 0.6rem;font-size:0.85rem;color:#584840">
+          Skontroluj SumUp či platba prešla, potom klikni:
+        </p>
+        <a href="{confirm_url}"
+           style="display:inline-block;background:#b89a7a;color:#fff;text-decoration:none;
+                  padding:0.85rem 2rem;border-radius:50px;font-size:0.82rem;
+                  letter-spacing:0.1em;text-transform:uppercase">
+          ✓ &nbsp;Potvrdiť platbu a poslať klientovi
+        </a>
+        <p style="margin:1rem 0 0;font-size:0.75rem;color:#8a7f78">
+          Alebo ignoruj ak platba neprešla.
+        </p>
+      </div>
+    </div>"""
+    send_email([ADMIN_EMAIL], f"Nová platba – {product_name} · {email}", admin_html)
+    return jsonify({"redirect": SUMUP_URLS[product]})
+
+
+@app.route("/api/confirm-payment")
+def confirm_payment():
+    token = request.args.get("token", "")
+    if not token:
+        return "Neplatný odkaz.", 400
+
+    with get_db() as db:
+        row = db.execute(
+            "SELECT * FROM purchases WHERE token=?", (token,)
+        ).fetchone()
+        if not row:
+            return "Odkaz neexistuje alebo bol už použitý.", 400
+        if row["status"] == "confirmed":
+            return _confirm_success_page(row["email"], row["product"], already=True)
+        db.execute("UPDATE purchases SET status='confirmed' WHERE token=?", (token,))
+        db.commit()
+
+    _send_purchase_confirmation(row["email"], row["product"])
+    return _confirm_success_page(row["email"], row["product"])
+
+
+def _send_purchase_confirmation(email, product):
+    if product == "guide":
+        tpl_path = os.path.join(BASE, "content", "sk", "emails", "kurz_confirm.html")
+        try:
+            with open(tpl_path, encoding="utf-8") as f:
+                html = f.read()
+            download_url = f"{SITE_URL}/partner-guide-download.html"
+            block = (
+                f'<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px">'
+                f'<tr><td style="text-align:center">'
+                f'<a href="{download_url}" style="display:inline-block;background:#b89a7a;color:#fff;'
+                f'text-decoration:none;padding:14px 32px;border-radius:50px;font-family:Arial,sans-serif;'
+                f'font-size:12px;letter-spacing:0.12em;text-transform:uppercase">'
+                f'Stiahnuť manuál pre partnera →</a></td></tr></table>'
+            )
+            html = html.replace("{{kurz_date}}", "")
+            html = html.replace('<p style="margin:0 0 18px;font-size:15px;color:#3a2e2a;line-height:1.85">platba prebehla',
+                                block + '<p style="margin:0 0 18px;font-size:15px;color:#3a2e2a;line-height:1.85">Manuál je tvoj –')
+            send_email([email], "Tvoj manuál pre partnera – Magic Space", html)
+        except Exception as e:
+            print(f"guide confirm email error: {e}")
+    elif product == "bundle":
+        tpl_path = os.path.join(BASE, "content", "sk", "emails", "kurz_confirm.html")
+        try:
+            with open(tpl_path, encoding="utf-8") as f:
+                html = f.read()
+            download_url = f"{SITE_URL}/bundle-download.html"
+            html = html.replace("{{kurz_date}}", "4. júla alebo 12. septembra 2026")
+            html = html.replace("Tešíme sa na vás oboch", f'Máš oboje – <a href="{download_url}" style="color:#b89a7a">stiahnuť manuál →</a>')
+            send_email([email], "Kurz + Manuál zakúpený – Magic Space", html)
+        except Exception as e:
+            print(f"bundle confirm email error: {e}")
+    else:
+        _send_kurz_confirm_email(email)
+
+
+def _confirm_success_page(email, product, already=False):
+    msg = "Potvrdenie bolo už odoslané." if already else "Potvrdenie odoslané klientovi."
+    return f"""<!DOCTYPE html><html lang="sk"><head><meta charset="UTF-8">
+    <title>Platba potvrdená</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap" rel="stylesheet">
+    </head><body style="margin:0;background:#f0ebe6;font-family:'Jost',sans-serif;
+    display:flex;align-items:center;justify-content:center;min-height:100vh">
+    <div style="background:#fdfaf8;border-radius:20px;padding:2.5rem 2rem;max-width:380px;
+    text-align:center;box-shadow:0 4px 24px rgba(58,46,42,0.08)">
+      <div style="width:52px;height:52px;border-radius:50%;background:#b89a7a;color:#fff;
+      font-size:1.4rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem">✓</div>
+      <h2 style="font-weight:400;font-size:1.3rem;color:#3a2e2a;margin:0 0 0.6rem">{msg}</h2>
+      <p style="font-size:0.85rem;color:#8a7f78;margin:0 0 1.4rem">{email} · {PRODUCT_NAMES.get(product,'')}</p>
+      <a href="{SITE_URL}/admin.html" style="font-size:0.78rem;color:#b89a7a;text-decoration:none">← Admin</a>
+    </div></body></html>"""
+
+
+# ─── API: KURZ INTEREST ──────────────────────────────────────
+@app.route("/api/kurz-interest", methods=["POST"])
+def kurz_interest():
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    date  = (data.get("date") or "").strip()
+    if not email or not date:
+        return jsonify({"ok": True})
+    with get_db() as db:
+        db.execute("""
+            INSERT INTO contacts (name, email, topic, message)
+            VALUES (?, ?, 'Kurz – záujem', ?)
+        """, ("—", email, f"Termín: {date}"))
+        db.commit()
+    # Notifikácia adminu
+    send_email([ADMIN_EMAIL],
+        f"Nový záujem o kurz – {date}",
+        f"<p>Email: <strong>{email}</strong><br>Termín: <strong>{date}</strong></p>")
+    return jsonify({"ok": True})
+
+# ─── API: KURZ REGISTER (from thank-you page) ────────────
+@app.route("/api/kurz-register", methods=["POST"])
+def kurz_register():
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    if not email or "@" not in email:
+        return jsonify({"ok": True})
+    with get_db() as db:
+        existing = db.execute("SELECT id FROM subscribers WHERE email=?", (email,)).fetchone()
+        if existing:
+            db.execute("UPDATE subscribers SET kurz_confirmed=1 WHERE email=?", (email,))
+        else:
+            db.execute(
+                "INSERT INTO subscribers (email, source, kurz_confirmed) VALUES (?,?,1)",
+                (email, "kurz-dekujeme")
+            )
+        db.commit()
+    _send_kurz_confirm_email(email)
+    return jsonify({"ok": True})
+
+
+def _send_kurz_confirm_email(email):
+    tpl_path = os.path.join(BASE, "content", "sk", "emails", "kurz_confirm.html")
+    try:
+        with open(tpl_path, encoding="utf-8") as f:
+            html = f.read()
+        html = html.replace("{{kurz_date}}", "4. júla 2026 alebo 12. septembra 2026")
+        send_email([email], "Prihlásenie na kurz potvrdené – Magic Space", html)
+    except Exception as e:
+        print(f"kurz_confirm email error: {e}")
+
+
+# ─── API: SUBSCRIBE ──────────────────────────────────────────
+@app.route("/api/subscribe", methods=["POST"])
+def subscribe():
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    hp    = data.get("hp_name", "")  # honeypot
+    if hp:
+        return jsonify({"ok": True})  # bot — тихо игнорируем
+    if not email or "@" not in email:
+        return jsonify({"error": "Zadajte platný e-mail"}), 400
+    if not data.get("consent"):
+        return jsonify({"error": "Súhlas je povinný"}), 400
+    due_date = (data.get("due_date") or "").strip()
+    with get_db() as db:
+        existing = db.execute("SELECT id FROM subscribers WHERE email=?", (email,)).fetchone()
+        if not existing:
+            db.execute("INSERT INTO subscribers (email, due_date, source) VALUES (?,?,?)", (email, due_date, "landing"))
+        else:
+            if due_date:
+                db.execute("UPDATE subscribers SET due_date=? WHERE email=?", (due_date, email))
+        db.commit()
+    _send_welcome_email(email)
+    return jsonify({"ok": True})
+
+def _send_welcome_email(email):
+    tpl_path = os.path.join(BASE, "content", "sk", "emails", "nurture_1.html")
+    with open(tpl_path, encoding="utf-8") as f:
+        html = f.read()
+    unsubscribe_url = f"{SITE_URL}/unsubscribe?email={email}"
+    html = html.replace("{{unsubscribe_url}}", unsubscribe_url)
+    tg_link = create_invite_link()
+    if tg_link:
+        tg_block = (
+            f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px">'
+            f'<tr><td style="background:#f5e6e0;border-radius:14px;padding:18px 22px;text-align:center">'
+            f'<p style="margin:0 0 4px;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#b89a7a">Telegram kanál</p>'
+            f'<p style="margin:0 0 12px;font-size:14px;color:#3a2e2a;line-height:1.6">Pridajte sa do nášho súkromného kanála –<br>tipy, pripomienky a komunita pred pôrodom.</p>'
+            f'<a href="{tg_link}" style="display:inline-block;background:#3a2e2a;color:#fff;text-decoration:none;'
+            f'padding:11px 28px;border-radius:50px;font-family:Arial,sans-serif;font-size:12px;letter-spacing:0.1em;text-transform:uppercase">'
+            f'Vstúpiť do kanála →</a></td></tr></table>'
+        )
+        html = html.replace("</td></tr>\n\n    <!-- footer -->", tg_block + "</td></tr>\n\n    <!-- footer -->")
+    send_email([email], "Váš sprievodca ku pôrodu – MagicSpace", html)
+
+
+@app.route("/api/telegram-webhook", methods=["POST"])
+def telegram_webhook():
+    update = request.get_json(silent=True) or {}
+    threading.Thread(target=handle_update, args=(update,), daemon=True).start()
+    return "", 200
+
 # ─── API: RECENZIE ───────────────────────────────────────────
 @app.route("/api/reviews")
 def list_reviews():
@@ -678,6 +1096,30 @@ def list_reviews():
             (page,)
         ).fetchall()
     return jsonify([dict(r) for r in rows])
+
+@app.route("/unsubscribe")
+def unsubscribe():
+    email = request.args.get("email", "").strip().lower()
+    if email and "@" in email:
+        with get_db() as db:
+            db.execute("DELETE FROM subscribers WHERE email=?", (email,))
+            db.commit()
+    return """<!DOCTYPE html><html lang="sk"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Odhlásenie | Magic Space</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Jost',sans-serif;background:#f0ebe6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.card{background:#fdfaf8;border-radius:20px;padding:2.8rem 2.4rem;max-width:400px;text-align:center;box-shadow:0 4px 24px rgba(58,46,42,0.08)}
+.brand{font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:0.18em;text-transform:uppercase;color:#b89a7a;margin-bottom:1.8rem;display:block}
+h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:#3a2e2a;margin-bottom:0.8rem}
+p{font-size:0.88rem;color:#4a3530;line-height:1.8;margin-bottom:1.6rem}
+a{display:inline-block;color:#b89a7a;font-size:0.8rem;text-decoration:none;border-bottom:1px solid rgba(184,154,122,0.4);padding-bottom:1px}</style></head>
+<body><div class="card">
+<span class="brand">MagicSpace</span>
+<h1>Odhlásenie prebehlo</h1>
+<p>Vaša e-mailová adresa bola odstránená zo zoznamu. Nebudete dostávať ďalšie správy.</p>
+<a href="https://magicspace.sk">← Späť na magicspace.sk</a>
+</div></body></html>""", 200
 
 @app.route("/api/reviews/admin")
 def list_reviews_admin():

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokračovať k platbe | Magic Space</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#f0ebe6; --white:#fdfaf8; --text:#3a2e2a; --gold:#b89a7a; --rose:#f5e6e0; --muted:#8a7f78; }
+    body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1.2rem; }
+    .card { background: var(--white); border-radius: 24px; max-width: 420px; width: 100%; box-shadow: 0 4px 32px rgba(58,46,42,0.08); overflow: hidden; }
+    .card-top { padding: 1.8rem 2rem 1.4rem; border-bottom: 1px solid rgba(184,154,122,0.15); }
+    .brand { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text); display: block; margin-bottom: 1.2rem; }
+    .brand span { color: var(--gold); }
+    .product-label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+    .product-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 0.3rem; }
+    .product-meta { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .price { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; color: var(--gold); margin-top: 0.8rem; line-height: 1; }
+
+    .card-body { padding: 1.8rem 2rem 2rem; }
+    label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.5rem; }
+    input[type=email] { width: 100%; border: 1px solid rgba(184,154,122,0.35); border-radius: 50px; padding: 0.8rem 1.2rem; font-family: 'Jost', sans-serif; font-size: 0.9rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
+    input[type=email]:focus { border-color: var(--gold); }
+    .btn { width: 100%; margin-top: 1rem; background: var(--gold); color: #fff; border: none; border-radius: 50px; padding: 1rem; font-family: 'Jost', sans-serif; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .btn:hover { opacity: 0.88; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.8rem; line-height: 1.6; }
+    .back { display: block; text-align: center; margin-top: 1.2rem; font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+    .back:hover { color: var(--gold); }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="card-top">
+    <span class="brand">Magic<span>Space</span></span>
+    <p class="product-label" id="productLabel"></p>
+    <p class="product-name" id="productName"></p>
+    <p class="product-meta" id="productMeta"></p>
+    <p class="price" id="productPrice"></p>
+  </div>
+  <div class="card-body">
+    <label for="email">Tvoja e-mailová adresa</label>
+    <input type="email" id="email" placeholder="tvoj@email.sk" autocomplete="email" required>
+    <button class="btn" id="payBtn" onclick="proceed()">
+      <span id="btnText">Pokračovať k platbe →</span>
+      <span class="spinner" id="spinner"></span>
+    </button>
+    <p class="note">Na tento email ti pošlem potvrdenie a všetky informácie.</p>
+    <a class="back" href="javascript:history.back()">← Späť</a>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = {
+  kurz: {
+    label: 'Online kurz pre páry',
+    name: 'Príprava na pôrod a šestonedelie',
+    meta: 'Online · 4. júla alebo 12. septembra · 9:00–17:00 · záznam 3 mesiace',
+    price: '59 €',
+    back: '/kurz.html'
+  },
+  bundle: {
+    label: 'Balík – najlepšia hodnota',
+    name: 'Kurz + Manuál pre partnera',
+    meta: 'Celodenný kurz · záznam 3 mesiace · manuál PDF ihneď',
+    price: '67 €',
+    back: '/kurz.html'
+  },
+  guide: {
+    label: 'Digitálny produkt',
+    name: 'Manuál pre partnera',
+    meta: 'PDF · 15 strán · okamžité stiahnutie po platbe',
+    price: '15 €',
+    back: '/partner-guide.html'
+  }
+};
+
+const params = new URLSearchParams(location.search);
+const product = params.get('p') || 'kurz';
+const token   = params.get('e') || '';
+const p = PRODUCTS[product] || PRODUCTS.kurz;
+
+document.getElementById('productLabel').textContent = p.label;
+document.getElementById('productName').textContent  = p.name;
+document.getElementById('productMeta').textContent  = p.meta;
+document.getElementById('productPrice').textContent = p.price;
+document.querySelector('.back').href = p.back;
+
+if (token) {
+  try {
+    const email = atob(token.replace(/-/g,'+').replace(/_/g,'/') + '==');
+    document.getElementById('email').value = email;
+  } catch(_) {}
+}
+
+async function proceed() {
+  const email = document.getElementById('email').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email').focus();
+    return;
+  }
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  document.getElementById('btnText').textContent = 'Presmerúvam...';
+  document.getElementById('spinner').style.display = 'block';
+
+  try {
+    const res = await fetch('/api/pre-checkout', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, product })
+    });
+    const data = await res.json();
+    window.location.href = data.redirect;
+  } catch(_) {
+    // fallback – redirect anyway
+    const urls = {
+      kurz:   'https://pay.sumup.com/b2c/Q51A04KE',
+      bundle: 'https://pay.sumup.com/b2c/QLZBCS4G',
+      guide:  'https://pay.sumup.com/b2c/QC3SD8JE'
+    };
+    window.location.href = urls[product];
+  }
+}
+
+document.getElementById('email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') proceed();
+});
+</script>
+</body>
+</html>

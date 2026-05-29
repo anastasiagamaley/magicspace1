@@ -309,6 +309,24 @@
   <p>© 2025 MagicSpace · Martin</p>
 </footer>
 
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeCancelModal()">×</button>
+    <h2 id="cancelTitle">Zrušiť rezerváciu</h2>
+    <p id="cancelSubtitle" style="color:var(--gold);font-size:0.85rem;margin-bottom:0.5rem;font-style:italic"></p>
+    <p style="color:var(--text-light);font-size:0.88rem;margin-bottom:1.4rem;line-height:1.7">Zadajte e-mail, ktorý ste použili pri rezervácii.</p>
+    <div id="cancelForm">
+      <div class="fg"><label>E-mail</label><input type="email" id="cancelEmail" placeholder="jana@email.sk" required></div>
+      <button onclick="submitCancel()" class="btn-book">Zrušiť moju rezerváciu</button>
+    </div>
+    <div id="cancelResult" style="display:none;text-align:center;padding:1rem 0">
+      <div id="cancelIcon" style="font-size:2.5rem;margin-bottom:0.8rem"></div>
+      <p id="cancelMsg" style="font-size:0.95rem;color:var(--text);line-height:1.7"></p>
+    </div>
+  </div>
+</div>
+
 <!-- BOOKING MODAL -->
 <div class="modal-overlay" id="bookingModal">
   <div class="modal">
@@ -353,6 +371,7 @@ async function renderParkSessions() {
         <div class="session-meta"><span>⏱ ${s.duration}</span><span>💰 ${s.price}</span></div>
         <p class="session-desc">${s.desc}</p>
         <button class="btn-book" ${isFull||isCan?'disabled':''} onclick="openBooking(${s.id})">${isCan?'Zrušené':isFull?'Plná kapacita':'Rezervovať miesto'}</button>
+        ${!isCan ? `<button onclick="openCancelModal(${s.id}, '${s.title.replace(/'/g,"\\'")} – ${df}')" style="display:block;width:100%;margin-top:0.5rem;background:none;border:none;color:var(--text-light);font-family:'Jost',sans-serif;font-size:0.75rem;cursor:pointer;padding:0.3rem;text-decoration:underline;text-underline-offset:3px;opacity:0.7" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">Zrušiť rezerváciu</button>` : ''}
       </div>`;
     }).join('');
   } catch(e) { grid.innerHTML = '<p style="color:var(--text-light)">Chyba načítania lekcií.</p>'; }
@@ -391,6 +410,52 @@ async function submitBooking(e) {
     document.getElementById('bookSuccess').style.display='block';
     setTimeout(()=>{ closeModal(); renderParkSessions(); e.target.reset(); btn.disabled=false; btn.textContent='Potvrdiť miesto'; }, 2600);
   } catch(err) { alert(err.message); btn.disabled=false; btn.textContent='Potvrdiť miesto'; }
+}
+
+let cancelSessionId = null;
+function openCancelModal(sid, label){
+  cancelSessionId = sid || null;
+  document.getElementById('cancelEmail').value='';
+  document.getElementById('cancelForm').style.display='block';
+  document.getElementById('cancelResult').style.display='none';
+  document.getElementById('cancelTitle').textContent='Zrušiť rezerváciu';
+  document.getElementById('cancelSubtitle').textContent = label || '';
+  document.getElementById('cancelModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('cancelEmail').focus(), 200);
+}
+function closeCancelModal(){ document.getElementById('cancelModal').classList.remove('open'); document.body.style.overflow=''; }
+document.getElementById('cancelModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeCancelModal(); });
+async function submitCancel(){
+  const email = document.getElementById('cancelEmail').value.trim();
+  if(!email){ return; }
+  const btn = document.querySelector('#cancelForm .btn-book');
+  btn.disabled=true; btn.textContent='Spracovávam…';
+  try {
+    const body = {email};
+    if(cancelSessionId) body.session_id = cancelSessionId;
+    const res = await fetch('/api/bookings/cancel-by-email', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    document.getElementById('cancelForm').style.display='none';
+    document.getElementById('cancelResult').style.display='block';
+    if(data.cancelled > 0){
+      document.getElementById('cancelIcon').textContent='✓';
+      document.getElementById('cancelIcon').style.color='var(--gold)';
+      document.getElementById('cancelMsg').textContent='Rezervácia bola zrušená. Ďakujeme, že si nám dala vedieť – miesto sme uvoľnili pre iného záujemcu.';
+    } else {
+      document.getElementById('cancelIcon').textContent='○';
+      document.getElementById('cancelIcon').style.color='var(--text-light)';
+      document.getElementById('cancelMsg').textContent = data.message || 'Žiadna aktívna rezervácia na tento e-mail.';
+    }
+    document.getElementById('cancelTitle').textContent='';
+    setTimeout(()=>{ closeCancelModal(); renderParkSessions(); }, 4000);
+  } catch(e){
+    btn.disabled=false; btn.textContent='Zrušiť moju rezerváciu';
+    alert('Chyba, skúste znova.');
+  }
 }
 
 window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>60);});

@@ -2,8 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://magicspace.sk/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://magicspace.sk/dula.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://magicspace.sk/soundhealing.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.magicspace.sk/jogamartin</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
-  <url><loc>https://magicspace.sk/firmy.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://magicspace.sk/kurz.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://magicspace.sk/partner-guide.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://magicspace.sk/landing.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://magicspace.sk/soundhealing.html</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://magicspace.sk/firmy.html</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.magicspace.sk/jogamartin</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://magicspace.sk/refund-policy.html</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://magicspace.sk/privacy.html</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
 </urlset>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ďakujeme – balík zakúpený | Magic Space</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#f0ebe6; --white:#fdfaf8; --text:#3a2e2a; --gold:#b89a7a; --rose:#f5e6e0; --muted:#8a7f78; }
+    body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 3rem 1.2rem 5rem; }
+    .card { background: var(--white); border-radius: 24px; max-width: 520px; width: 100%; box-shadow: 0 4px 32px rgba(58,46,42,0.08); overflow: hidden; }
+    .card-top { background: var(--text); padding: 2.4rem 2rem; text-align: center; }
+    .brand { font-family: 'Cormorant Garamond', serif; font-size: 1rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--white); display: block; margin-bottom: 1.4rem; }
+    .brand span { color: var(--gold); }
+    .check { width: 56px; height: 56px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: #fff; }
+    .card-top h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; color: var(--white); line-height: 1.2; }
+    .card-top h1 em { color: var(--gold); font-style: italic; }
+    .card-body { padding: 2rem 2rem 2.4rem; }
+    .card-body p { font-size: 0.88rem; color: #4a3530; line-height: 1.8; margin-bottom: 1rem; }
+
+    .step { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #fff; font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body h3 { font-size: 0.88rem; font-weight: 500; color: var(--text); margin-bottom: 0.2rem; }
+    .step-body p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    .download-btn { display: block; background: var(--gold); color: #fff; text-decoration: none; border-radius: 50px; padding: 1rem 1.8rem; text-align: center; font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; margin: 1.4rem 0 0.5rem; transition: opacity 0.2s; }
+    .download-btn:hover { opacity: 0.88; }
+    .download-note { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.5; }
+
+    .divider { border: none; border-top: 1px solid rgba(184,154,122,0.2); margin: 1.6rem 0; }
+
+    .zoom-note { background: var(--rose); border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.4rem; }
+    .zoom-note .label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+    .zoom-note p { font-size: 0.83rem; color: var(--text); margin: 0; }
+
+    .confirm-form label { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.5rem; }
+    .confirm-form input { width: 100%; border: 1px solid rgba(184,154,122,0.35); border-radius: 50px; padding: 0.75rem 1.2rem; font-family: 'Jost', sans-serif; font-size: 0.88rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
+    .confirm-form input:focus { border-color: var(--gold); }
+    .confirm-form button { width: 100%; margin-top: 0.8rem; background: var(--text); color: #fff; border: none; border-radius: 50px; padding: 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; }
+    .confirm-form button:hover { opacity: 0.85; }
+    .confirm-form .sub-note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.6rem; }
+    #confirmSuccess { display: none; background: #e8f0e4; border-radius: 12px; padding: 1rem 1.2rem; font-size: 0.85rem; color: #3a5434; text-align: center; margin-top: 1rem; }
+
+    .links { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid rgba(184,154,122,0.2); }
+    .links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+    .links a:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="card-top">
+    <span class="brand">Magic<span>Space</span></span>
+    <div class="check">✓</div>
+    <h1>Balík zakúpený –<br><em>máš oboje</em></h1>
+  </div>
+  <div class="card-body">
+    <p>Ďakujeme! Kurz aj manuál pre partnera sú tvoje.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Stiahni si manuál pre partnera</h3>
+        <p>PDF je pripravené – stiahnuť ho môžeš hneď teraz.</p>
+      </div>
+    </div>
+
+    <a href="/byt_tam_paid_guide.pdf" class="download-btn" download>
+      Stiahnuť manuál pre partnera (PDF) →
+    </a>
+    <p class="download-note">Odkaz funguje kedykoľvek – záložte si túto stránku.</p>
+
+    <hr class="divider">
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Kurz – odkaz na Zoom dostaneš e-mailom</h3>
+        <p>Potvrď svoju adresu nižšie a pošlem ti ho týždeň pred kurzom.</p>
+      </div>
+    </div>
+
+    <div class="zoom-note">
+      <p class="label">Ako sa pripraviť na kurz</p>
+      <p>Papier a pero · vaše otázky · pohodlné miesto pre vás dvoch · jedlo na celý deň · celá sobota len pre vás</p>
+    </div>
+
+    <form class="confirm-form" id="confirmForm" onsubmit="confirmEmail(event)">
+      <label for="conf-email">Tvoja e-mailová adresa</label>
+      <input type="email" id="conf-email" placeholder="tvoj@email.sk" required autocomplete="email">
+      <button type="submit">Potvrdiť – pošli mi odkaz na Zoom</button>
+      <p class="sub-note">Na tento email ti pošlem odkaz na Zoom týždeň pred kurzom.</p>
+    </form>
+    <div id="confirmSuccess">Výborne! E-mail potvrdený. Odkaz na Zoom príde týždeň pred kurzom.</div>
+
+    <div class="links">
+      <a href="/kurz.html">O kurze</a>
+      <a href="/index.html">magicspace.sk</a>
+    </div>
+  </div>
+</div>
+
+<script>
+async function confirmEmail(e) {
+  e.preventDefault();
+  const email = document.getElementById('conf-email').value.trim();
+  if (!email) return;
+  try {
+    await fetch('/api/kurz-register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email })
+    });
+  } catch(_) {}
+  document.getElementById('confirmForm').style.display = 'none';
+  document.getElementById('confirmSuccess').style.display = 'block';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bezplatný sprievodca ku pôrodu – PDF zadarmo | Magic Space</title>
+  <meta name="description" content="Bezplatný PDF sprievodca ku pôrodu pre vás aj partnera. Fázy pôrodu, dýchanie, práva rodičky, rodový plán. Stiahnite okamžite.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://magicspace.sk/landing.html">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Bezplatný sprievodca ku pôrodu",
+    "description": "PDF sprievodca ku pôrodu pre páry – fázy pôrodu, dýchanie, práva, rodový plán. Zadarmo.",
+    "url": "https://magicspace.sk/landing.html",
+    "publisher": { "@type": "Person", "name": "Anastasia Gamaley", "url": "https://magicspace.sk" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --rose: #f5e6e0;
+      --blush: #edddd6;
+      --text: #3a2e2a;
+      --text-light: #4a3530;
+      --white: #fdfaf8;
+      --gold: #b89a7a;
+      --gold-dark: #a0876a;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 1.4rem;
+    }
+
+    /* ── TOP ── */
+    .top {
+      text-align: center;
+      padding: 2.4rem 0 0;
+    }
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .tag {
+      display: inline-block;
+      margin-top: 2rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.6rem;
+      font-weight: 300;
+      line-height: 1.1;
+      margin: 0.6rem 0 1rem;
+    }
+    h1 em { font-style: italic; color: var(--gold); }
+    .hero-sub {
+      font-size: 0.93rem;
+      line-height: 1.85;
+      color: var(--text-light);
+      margin-bottom: 1.8rem;
+    }
+
+    /* ── WHAT YOU GET ── */
+    .get-list {
+      list-style: none;
+      background: var(--rose);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 2rem;
+    }
+    .get-list li {
+      font-size: 0.87rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(184,154,122,0.15);
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+    }
+    .get-list li:last-child { border-bottom: none; }
+    .get-list li::before {
+      content: '✦';
+      color: var(--gold);
+      font-size: 0.6rem;
+      margin-top: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    /* ── FORM ── */
+    .form-box {
+      margin-bottom: 2.4rem;
+    }
+    .form-box h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      margin-bottom: 0.3rem;
+    }
+    .form-box h2 em { font-style: italic; color: var(--gold); }
+    .form-box .sub { font-size: 0.82rem; color: var(--text-light); margin-bottom: 1.4rem; line-height: 1.6; }
+
+    .fg { margin-bottom: 0.9rem; }
+    .fg label {
+      display: block;
+      font-size: 0.67rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 0.35rem;
+    }
+    .fg input[type="email"],
+    .fg select {
+      width: 100%;
+      padding: 0.82rem 1rem;
+      border: 1px solid rgba(184,154,122,0.3);
+      border-radius: 10px;
+      background: var(--white);
+      font-family: 'Jost', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+    .fg input[type="email"]:focus,
+    .fg select:focus { border-color: var(--gold); }
+    .due-row { display: flex; gap: 0.6rem; }
+    .due-row select { flex: 1; }
+    .due-row select:last-child { flex: 0 0 100px; }
+
+    .consent-row {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+    }
+    .consent-row input[type="checkbox"] {
+      width: 17px; height: 17px;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+      cursor: pointer;
+    }
+    .consent-row label { font-size: 0.75rem; color: var(--text-light); line-height: 1.6; cursor: pointer; }
+    .consent-row a { color: var(--gold); text-decoration: underline; text-underline-offset: 2px; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      padding: 1rem;
+      border-radius: 50px;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: var(--gold-dark); }
+    .btn-submit:disabled { background: #c9b9ac; cursor: not-allowed; }
+    #subError { display:none; color:#9b3a2a; font-size:0.78rem; margin-top:0.7rem; text-align:center; }
+
+    /* success */
+    #formSuccess { display:none; text-align:center; padding: 1rem 0; }
+    #formSuccess .check { font-size:2.2rem; color:var(--gold); margin-bottom:0.6rem; }
+    #formSuccess h3 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:300; margin-bottom:0.5rem; }
+    #formSuccess p { font-size:0.83rem; color:var(--text-light); line-height:1.7; margin-bottom:1.2rem; }
+    .btn-dl {
+      display: inline-block;
+      background: var(--gold);
+      color: #fff;
+      padding: 0.85rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── ABOUT ── */
+    .about {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--rose);
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 2rem;
+    }
+    .about img {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--blush);
+      flex-shrink: 0;
+    }
+    .about-name { font-family:'Cormorant Garamond',serif; font-size:0.95rem; color:var(--text); }
+    .about-desc { font-size:0.75rem; color:var(--text-light); margin-top:0.2rem; line-height:1.5; }
+
+    /* ── TELEGRAM ── */
+    .tg-strip {
+      background: var(--blush);
+      border-radius: 14px;
+      padding: 1.4rem 1.4rem;
+      margin-bottom: 2.4rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .tg-strip .ico { font-size: 1.8rem; flex-shrink: 0; }
+    .tg-strip h3 { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:300; margin-bottom:0.3rem; }
+    .tg-strip h3 em { font-style:italic; color:var(--gold); }
+    .tg-strip p { font-size:0.8rem; color:var(--text-light); line-height:1.6; }
+
+    /* ── UPSELL ── */
+    .upsell-heading {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 1.8rem 0 0.9rem;
+      text-align: center;
+    }
+    .upsell-card {
+      display: block;
+      background: var(--rose);
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid rgba(184,154,122,0.18);
+      transition: border-color 0.2s;
+    }
+    .upsell-card:hover { border-color: var(--gold); }
+    .upsell-card-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.3rem;
+    }
+    .upsell-card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .upsell-card-desc {
+      font-size: 0.77rem;
+      color: var(--text-light);
+      line-height: 1.55;
+    }
+    .upsell-card-price {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      background: var(--gold);
+      color: #fff;
+      padding: 0.28rem 0.8rem;
+      border-radius: 50px;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(184,154,122,0.15);
+      padding: 1.6rem 0 2rem;
+      text-align: center;
+    }
+    footer a { color:var(--gold); text-decoration:none; font-size:0.75rem; margin: 0 0.6rem; }
+    .disclaimer { font-size:0.68rem; color:rgba(58,46,42,0.35); line-height:1.6; margin-top:0.8rem; }
+  </style>
+</head>
+<body>
+
+<!-- TOP -->
+<div class="top">
+  <a href="/index.html" class="brand">Magic Space</a>
+  <div class="tag">Bezplatný sprievodca · PDF</div>
+  <h1>Váš pokoj<br>je v <em>dobrých rukách</em></h1>
+  <p class="hero-sub">Praktický sprievodca ku pôrodu pre vás aj vášho partnera – čo čakať, ako dýchať, aké máte práva a hotový rodový plán.</p>
+</div>
+
+<!-- WHAT YOU GET -->
+<ul class="get-list">
+  <li>Fázy pôrodu – čo čakať v každej z nich</li>
+  <li>Dýchacie techniky pre vás aj partnera</li>
+  <li>Čo povedať (a čo radšej nie) počas pôrodu</li>
+  <li>Signály tela – kedy ísť do pôrodnice</li>
+  <li>Vaše práva ako rodičky</li>
+  <li>Šablóna rodového plánu na vyplnenie</li>
+</ul>
+
+<!-- FORM -->
+<div class="form-box">
+  <h2>Získajte sprievodcu <em>zadarmo</em></h2>
+  <p class="sub">Zadajte e-mail a PDF vám pošleme okamžite.</p>
+
+  <div id="formContent">
+    <input type="text" id="hp_name" style="display:none" tabindex="-1" autocomplete="off">
+
+    <div class="fg">
+      <label>Váš e-mail</label>
+      <input type="email" id="subEmail" placeholder="jana@email.sk">
+    </div>
+
+    <div class="fg">
+      <label>Kedy čakáte bábätko? <span style="color:var(--gold);font-style:italic;text-transform:none;letter-spacing:0;font-size:0.9em">(nepovinné)</span></label>
+      <div class="due-row">
+        <select id="subMonth">
+          <option value="">Mesiac</option>
+          <option>Január</option><option>Február</option><option>Marec</option>
+          <option>Apríl</option><option>Máj</option><option>Jún</option>
+          <option>Júl</option><option>August</option><option>September</option>
+          <option>Október</option><option>November</option><option>December</option>
+        </select>
+        <select id="subYear">
+          <option value="">Rok</option>
+          <option>2025</option><option>2026</option><option>2027</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="consent-row">
+      <input type="checkbox" id="subConsent">
+      <label for="subConsent">Súhlasím so spracovaním e-mailu za účelom zaslania sprievodcu a prípadných ďalších materiálov. Súhlas môžem kedykoľvek odvolať. <a href="/privacy.html" target="_blank">Ochrana údajov</a></label>
+    </div>
+
+    <button class="btn-submit" id="subBtn" onclick="submitSubscribe()">Poslať mi sprievodcu</button>
+    <p id="subError"></p>
+  </div>
+
+  <div id="formSuccess">
+    <div class="check">✓</div>
+    <h3>Skontrolujte e-mail!</h3>
+    <p>Poslali sme vám odkaz na stiahnutie PDF. Ak správu nevidíte, pozrite sa do priečinka Spam.</p>
+    <a href="/magicspace_leadmagnet.pdf" target="_blank" class="btn-dl">Otvoriť PDF →</a>
+
+    <p class="upsell-heading">Chcete viac?</p>
+
+    <a href="/kurz.html" class="upsell-card">
+      <div class="upsell-card-label">Online kurz · pre páry</div>
+      <div class="upsell-card-title">Príprava na pôrod a šestonedelie – Intenzív</div>
+      <div class="upsell-card-desc">Celý deň pre vás dvoch – fázy pôrodu, úľava od bolesti, šestonedelie. Online, celé Slovensko.</div>
+      <span class="upsell-card-price">59 € / pár →</span>
+    </a>
+
+    <a href="/partner-guide.html" class="upsell-card" id="partnerGuideLink">
+      <div class="upsell-card-label">PDF pre partnera</div>
+      <div class="upsell-card-title">Rozšírený sprievodca pre partnera</div>
+      <div class="upsell-card-desc">Podrobnejší manuál s krokmi, frázami a masážnymi technikami – špeciálne pre partnera v pôrodnici.</div>
+      <span class="upsell-card-price">15 € →</span>
+    </a>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="about">
+  <img src="/uploads/me.jpeg" alt="Anastasia Gamaley">
+  <div>
+    <div class="about-name">Anastasia Gamaley</div>
+    <div class="about-desc">Certifikovaná dula a jogaterapeutka z Martina. Sprevádzam ženy pri pôrode a pomáham im aj ich partnerom byť pripravenými.</div>
+  </div>
+</div>
+
+<!-- UPSELL (always visible) -->
+<p class="upsell-heading">Ďalšie materiály</p>
+
+<a href="/kurz.html" class="upsell-card">
+  <div class="upsell-card-label">Online kurz · pre páry</div>
+  <div class="upsell-card-title">Príprava na pôrod a šestonedelie – Intenzív</div>
+  <div class="upsell-card-desc">Celý deň pre vás dvoch – fázy pôrodu, úľava od bolesti, šestonedelie. Online, celé Slovensko.</div>
+  <span class="upsell-card-price">59 € / pár →</span>
+</a>
+
+<a href="/partner-guide.html" class="upsell-card">
+  <div class="upsell-card-label">PDF pre partnera</div>
+  <div class="upsell-card-title">Rozšírený sprievodca pre partnera</div>
+  <div class="upsell-card-desc">Podrobnejší manuál s krokmi, frázami a masážnymi technikami – špeciálne pre partnera v pôrodnici.</div>
+  <span class="upsell-card-price">15 € →</span>
+</a>
+
+<!-- FOOTER -->
+<footer>
+  <a href="/index.html">magicspace.sk</a>
+  <a href="/privacy.html">Ochrana údajov</a>
+  <a href="mailto:info@magicspace.sk">info@magicspace.sk</a>
+  <p class="disclaimer">Obsah má informatívny charakter a nenahrádza odborné medicínske poradenstvo. Vždy sa poraďte so svojím lekárom alebo pôrodnou asistentkou. · © 2025 MagicSpace</p>
+</footer>
+
+<script>
+async function submitSubscribe() {
+  const email   = document.getElementById('subEmail').value.trim();
+  const consent = document.getElementById('subConsent').checked;
+  const hp      = document.getElementById('hp_name').value;
+  const month   = document.getElementById('subMonth').value;
+  const year    = document.getElementById('subYear').value;
+  const due_date = (month && year) ? `${month} ${year}` : '';
+  const btn     = document.getElementById('subBtn');
+  const errEl   = document.getElementById('subError');
+
+  errEl.style.display = 'none';
+  if (!email)   { showErr('Zadajte e-mail'); return; }
+  if (!consent) { showErr('Prosím, zaškrtnite súhlas'); return; }
+
+  btn.disabled = true; btn.textContent = 'Odosielam…';
+
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, consent: true, hp_name: hp, due_date })
+    });
+    const data = await res.json();
+    if (!res.ok) { showErr(data.error || 'Chyba'); btn.disabled = false; btn.textContent = 'Poslať mi sprievodcu'; return; }
+    document.getElementById('formContent').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  } catch(e) {
+    showErr('Chyba spojenia, skúste znova');
+    btn.disabled = false; btn.textContent = 'Poslať mi sprievodcu';
+  }
+
+  function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
+}
+document.getElementById('subEmail').addEventListener('keydown', e => { if (e.key === 'Enter') submitSubscribe(); });
+</script>
+
+</body>
+</html>

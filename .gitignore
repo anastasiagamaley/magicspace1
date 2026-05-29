@@ -5,6 +5,11 @@
 magicspace.db
 data/subscribers.db
 
+# Kontakty klientov – NIKDY do GitHubu!
+scripts/contacts.csv
+scripts/send_log.txt
+scripts/_upload_to_server.py
+
 # Python
 __pycache__/
 *.pyc
