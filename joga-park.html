@@ -305,7 +305,7 @@
     <a href="index.html">MagicSpace</a>
     <a href="privacy.html">Ochrana údajov</a>
   </div>
-  <p>© 2025 MagicSpace · Martin</p>
+  <p>© <span class="js-year">2026</span> MagicSpace · Martin</p>
 </footer>
 
 <!-- BOOKING MODAL -->
@@ -331,6 +331,15 @@
   </div>
 </div>
 
+<script>
+// Escapuje text z API (recenzie, nazvy sesii) pred vlozenim do innerHTML.
+function esc(v){
+  if(v===null||v===undefined) return '';
+  return String(v).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+</script>
 <script src="/api.js"></script>
 <script>
 async function renderParkSessions() {
@@ -347,10 +356,10 @@ async function renderParkSessions() {
       const left = s.spots - s.booked;
       return `<div class="session-card">
         <span class="session-badge ${isFull?'full':''} ${isCan?'cancelled':''}">${isCan?'Zrušené':isFull?'Plná kapacita':left+' voľných miest'}</span>
-        <h3>${s.title}</h3>
-        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${s.time}</span></div>
-        <div class="session-meta"><span>⏱ ${s.duration}</span><span>💰 ${s.price}</span></div>
-        <p class="session-desc">${s.desc}</p>
+        <h3>${esc(s.title)}</h3>
+        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${esc(s.time)}</span></div>
+        <div class="session-meta"><span>⏱ ${esc(s.duration)}</span><span>💰 ${esc(s.price)}</span></div>
+        <p class="session-desc">${esc(s.desc)}</p>
         <button class="btn-book" ${isFull||isCan?'disabled':''} onclick="openBooking(${s.id})">${isCan?'Zrušené':isFull?'Plná kapacita':'Rezervovať miesto'}</button>
       </div>`;
     }).join('');
@@ -403,9 +412,9 @@ renderParkSessions();
     const list=await API.getReviews('park');
     if(!list.length){box.innerHTML='<p style="color:var(--text-light);font-size:0.88rem">Zatiaľ žiadne recenzie.</p>';return;}
     box.innerHTML=list.map(r=>`<div style="background:var(--white2);border-radius:16px;padding:1.4rem 1.6rem;border:1px solid rgba(122,158,110,0.2)">
-      <div style="color:#7a9e6e;font-size:1.1rem;margin-bottom:0.5rem">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
-      <p style="font-size:0.88rem;color:var(--text);line-height:1.7;margin-bottom:0.8rem">"${r.text}"</p>
-      <strong style="font-size:0.8rem;color:var(--text-light)">${r.name}</strong>
+      <div style="color:#7a9e6e;font-size:1.1rem;margin-bottom:0.5rem">${'★'.repeat(Math.max(0,Math.min(5,r.stars|0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,r.stars|0)))}</div>
+      <p style="font-size:0.88rem;color:var(--text);line-height:1.7;margin-bottom:0.8rem">"${esc(r.text)}"</p>
+      <strong style="font-size:0.8rem;color:var(--text-light)">${esc(r.name)}</strong>
     </div>`).join('');
   }catch(e){box.innerHTML='';}
 })();
@@ -491,6 +500,12 @@ loadWeather();
   function acceptCookies(){localStorage.setItem('cookie_consent','accepted');hideCookiePopup();}
   function declineCookies(){sessionStorage.setItem('cookie_dismissed','1');hideCookiePopup();}
   if(!localStorage.getItem('cookie_consent')&&!sessionStorage.getItem('cookie_dismissed'))showCookiePopup();
+</script>
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
 </script>
 </body>
 </html>

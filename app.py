@@ -64,9 +64,71 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=SITE_URL.startswith("https"),
     PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+    MAX_CONTENT_LENGTH=8 * 1024 * 1024,   # 8 MB – strop pre upload
 )
 
 # ─── OCHRANA ADMIN ENDPOINTOV ────────────────────────────────
+# ─── SANITIZÁCIA VSTUPOV Z VEREJNÝCH FORMULÁROV ──────────────
+import html as _html
+import re as _re
+
+# riadiace znaky okrem tab/CR/LF – tie v správach chceme zachovať
+_CTRL = _re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+def clean_text(value, maxlen=2000):
+    """Oreže vstup z formulára a odstráni riadiace znaky."""
+    txt = "" if value is None else str(value)
+    return _CTRL.sub("", txt).strip()[:maxlen]
+
+def fmt_date_sk(value):
+    """Dátum v tvare 4. 7. 2026. strftime("%-d") funguje len na Linuxe,
+    preto skladáme reťazec ručne – inak padne lokálne spustenie na Windows."""
+    if not value:
+        return ""
+    try:
+        d = datetime.strptime(str(value)[:10], "%Y-%m-%d")
+    except (ValueError, TypeError):
+        return str(value)
+    return "%d. %d. %d" % (d.day, d.month, d.year)
+
+def esc(value):
+    """Escapuje hodnotu pred vložením do HTML emailu."""
+    return _html.escape("" if value is None else str(value), quote=True)
+
+def clean_subject(value, maxlen=180):
+    """Predmet emailu bez zalomení – bráni podvrhnutiu hlavičiek."""
+    txt = _CTRL.sub("", str(value or ""))
+    return txt.replace("\r", " ").replace("\n", " ").strip()[:maxlen]
+
+# ─── LIMIT POČTU POŽIADAVIEK NA IP ───────────────────────
+_rate_hits = {}
+_rate_lock = threading.Lock()
+
+def rate_limit(max_calls, per_seconds):
+    """Bráni spamu cez verejné formuláre a hádaniu admin hesla."""
+    def deco(fn):
+        @wraps(fn)
+        def wrapper(*a, **kw):
+            fwd = request.headers.get("X-Forwarded-For", "")
+            ip  = fwd.split(",")[0].strip() or request.remote_addr or "?"
+            key = (fn.__name__, ip)
+            now = datetime.now().timestamp()
+            with _rate_lock:
+                hits = [t for t in _rate_hits.get(key, []) if now - t < per_seconds]
+                if len(hits) >= max_calls:
+                    return jsonify({"error": "Príliš veľa pokusov. Skúste to o chvíľu."}), 429
+                hits.append(now)
+                _rate_hits[key] = hits
+                if len(_rate_hits) > 5000:          # jednoduché čistenie pamäte
+                    stale = [k for k, v in _rate_hits.items()
+                             if not any(now - t < per_seconds for t in v)]
+                    for k in stale:
+                        _rate_hits.pop(k, None)
+            return fn(*a, **kw)
+        return wrapper
+    return deco
+
+
 def require_admin(fn):
     """Bez prihlásenia vráti 401 – chráni osobné údaje klientok."""
     @wraps(fn)
@@ -200,7 +262,7 @@ def send_email(to_list, subject, html_body):
 
 def email_booking_client(booking, session):
     """Email klientovi po rezervácii."""
-    date_fmt = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%-d. %-m. %Y") if session else ""
+    date_fmt = fmt_date_sk(session["date"]) if session else ""
     html = f"""
     <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#3a2e2a">
       <div style="background:#f5e6e0;padding:2rem;text-align:center;border-radius:12px 12px 0 0">
@@ -208,7 +270,7 @@ def email_booking_client(booking, session):
       </div>
       <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
         <h2 style="font-weight:300;font-size:1.4rem">Rezervácia potvrdená</h2>
-        <p>Ahoj <strong>{booking["name"]}</strong>,</p>
+        <p>Ahoj <strong>{esc(booking["name"])}</strong>,</p>
         <p>tvoja rezervácia bola prijatá. Tešíme sa na teba! 🌸</p>
         <div style="background:#f5e6e0;border-radius:10px;padding:1.2rem;margin:1.5rem 0">
           <strong style="font-size:1.1rem">{session["title"] if session else ""}</strong><br>
@@ -224,7 +286,7 @@ def email_booking_client(booking, session):
 
 def email_booking_admin(booking, session):
     """Notifikácia adminu o novej rezervácii."""
-    date_fmt = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%-d. %-m. %Y") if session else ""
+    date_fmt = fmt_date_sk(session["date"]) if session else ""
     html = f"""
     <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#3a2e2a">
       <div style="background:#3a2e2a;padding:1.5rem;border-radius:12px 12px 0 0;text-align:center">
@@ -232,7 +294,7 @@ def email_booking_admin(booking, session):
       </div>
       <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
         <table style="width:100%;border-collapse:collapse">
-          <tr><td style="padding:0.4rem 0;color:#7a6660;width:120px">Meno</td><td><strong>{booking["name"]}</strong></td></tr>
+          <tr><td style="padding:0.4rem 0;color:#7a6660;width:120px">Meno</td><td><strong>{esc(booking["name"])}</strong></td></tr>
           <tr><td style="padding:0.4rem 0;color:#7a6660">Email</td><td><a href="mailto:{booking["email"]}" style="color:#b89a7a">{booking["email"]}</a></td></tr>
           <tr><td style="padding:0.4rem 0;color:#7a6660">Telefón</td><td>{booking.get("phone","–")}</td></tr>
           <tr><td style="padding:0.4rem 0;color:#7a6660">Sésia</td><td><strong>{session["title"] if session else "–"}</strong></td></tr>
@@ -255,29 +317,31 @@ def email_contact_admin(contact):
       </div>
       <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
         <table style="width:100%;border-collapse:collapse">
-          <tr><td style="padding:0.4rem 0;color:#7a6660;width:100px">Meno</td><td><strong>{contact["name"]}</strong></td></tr>
-          <tr><td style="padding:0.4rem 0;color:#7a6660">Email</td><td><a href="mailto:{contact["email"]}" style="color:#b89a7a">{contact["email"]}</a></td></tr>
-          <tr><td style="padding:0.4rem 0;color:#7a6660">Telefón</td><td>{contact.get("phone","–")}</td></tr>
-          <tr><td style="padding:0.4rem 0;color:#7a6660">Téma</td><td>{contact.get("topic","–")}</td></tr>
+          <tr><td style="padding:0.4rem 0;color:#7a6660;width:100px">Meno</td><td><strong>{esc(contact["name"])}</strong></td></tr>
+          <tr><td style="padding:0.4rem 0;color:#7a6660">Email</td><td><a href="mailto:{esc(contact["email"])}" style="color:#b89a7a">{esc(contact["email"])}</a></td></tr>
+          <tr><td style="padding:0.4rem 0;color:#7a6660">Telefón</td><td>{esc(contact.get("phone","–"))}</td></tr>
+          <tr><td style="padding:0.4rem 0;color:#7a6660">Téma</td><td>{esc(contact.get("topic","–"))}</td></tr>
         </table>
         <div style="background:#f5e6e0;border-radius:10px;padding:1rem;margin:1rem 0">
-          <p style="margin:0">{contact.get("message","")}</p>
+          <p style="margin:0;white-space:pre-wrap">{esc(contact.get("message",""))}</p>
         </div>
-        <a href="mailto:{contact["email"]}?subject=Re: {contact.get('topic','MagicSpace')}" style="background:#b89a7a;color:#fff;padding:0.7rem 1.5rem;border-radius:50px;text-decoration:none;font-size:0.85rem">Odpovedať →</a>
+        <a href="mailto:{esc(contact["email"])}?subject=Re: {esc(contact.get('topic','MagicSpace'))}" style="background:#b89a7a;color:#fff;padding:0.7rem 1.5rem;border-radius:50px;text-decoration:none;font-size:0.85rem">Odpovedať →</a>
       </div>
     </div>"""
-    send_email([ADMIN_EMAIL], f"Nová správa – {contact['name']}: {contact.get('topic','')}", html)
+    send_email([ADMIN_EMAIL],
+               clean_subject(f"Nová správa – {contact['name']}: {contact.get('topic','')}"),
+               html)
 
 def email_reminder(booking, session):
     """Pripomienka 24h pred sesiou."""
-    date_fmt = datetime.strptime(session["date"], "%Y-%m-%d").strftime("%-d. %-m. %Y")
+    date_fmt = fmt_date_sk(session["date"])
     html = f"""
     <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#3a2e2a">
       <div style="background:#c8d5c0;padding:2rem;text-align:center;border-radius:12px 12px 0 0">
         <h1 style="font-weight:300;font-size:1.6rem;margin:0">🌸 Zajtra ťa čakáme!</h1>
       </div>
       <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
-        <p>Ahoj <strong>{booking["name"]}</strong>,</p>
+        <p>Ahoj <strong>{esc(booking["name"])}</strong>,</p>
         <p>pripomíname ti, že zajtra máš rezervované miesto:</p>
         <div style="background:#f5e6e0;border-radius:10px;padding:1.2rem;margin:1.5rem 0">
           <strong style="font-size:1.1rem">{session["title"]}</strong><br>
@@ -298,11 +362,11 @@ def email_cancellation(booking, session):
         <h1 style="font-weight:300;font-size:1.6rem;margin:0">Sésia bola zrušená</h1>
       </div>
       <div style="background:#fdfaf8;padding:2rem;border-radius:0 0 12px 12px;border:1px solid #edddd6">
-        <p>Ahoj <strong>{booking["name"]}</strong>,</p>
+        <p>Ahoj <strong>{esc(booking["name"])}</strong>,</p>
         <p>s ľútosťou ti oznamujeme, že nasledujúca sésia musela byť zrušená:</p>
         <div style="background:#f5e6e0;border-radius:10px;padding:1.2rem;margin:1.5rem 0">
           <strong>{session["title"]}</strong><br>
-          📅 {datetime.strptime(session["date"],"%Y-%m-%d").strftime("%-d. %-m. %Y")} · 🕐 {session["time"]}
+          📅 {fmt_date_sk(session["date"])} · 🕐 {session["time"]}
         </div>
         <p>Ospravedlňujeme sa za nepríjemnosti. Čoskoro budem mať nové termíny.</p>
         <p style="color:#7a6660;font-size:0.9rem">Anastasia · MagicSpace · <a href="mailto:{ADMIN_EMAIL}" style="color:#b89a7a">{ADMIN_EMAIL}</a></p>
@@ -382,6 +446,7 @@ def robots():
 
 # ─── AUTH CHECK ───────────────────────────────────────────────
 @app.route("/api/auth", methods=["POST"])
+@rate_limit(10, 900)
 def auth():
     data = request.json or {}
     given = data.get("password") or ""
@@ -578,19 +643,21 @@ def list_bookings():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/bookings", methods=["POST"])
+@rate_limit(10, 3600)
 def create_booking():
     data = request.json
     if not data.get("name") or not data.get("email"):
         return jsonify({"error": "Chýba meno alebo email"}), 400
     sid = data.get("session_id")
-    session = None
+    # POZOR: nepomenovať 'session' – to je Flask session pre prihlásenie admina
+    ses_row = None
 
     with get_db() as db:
         if sid:
-            session = db.execute("SELECT * FROM sessions WHERE id=?", (sid,)).fetchone()
-            if not session:
+            ses_row = db.execute("SELECT * FROM sessions WHERE id=?", (sid,)).fetchone()
+            if not ses_row:
                 return jsonify({"error": "Sésia neexistuje"}), 404
-            if session["booked"] >= session["spots"] or session["badge"] in ("full","cancelled"):
+            if ses_row["booked"] >= ses_row["spots"] or ses_row["badge"] in ("full","cancelled"):
                 return jsonify({"error": "Sésia je plná alebo zrušená"}), 409
 
         cur = db.execute("""
@@ -605,13 +672,13 @@ def create_booking():
         db.commit()
 
         booking = dict(db.execute("SELECT * FROM bookings WHERE id=?", (cur.lastrowid,)).fetchone())
-        if session:
-            session = dict(session)
+        if ses_row:
+            ses_row = dict(ses_row)
 
     # Emaily v pozadí
-    if session:
-        email_booking_client(booking, session)
-        email_booking_admin(booking, session)
+    if ses_row:
+        email_booking_client(booking, ses_row)
+        email_booking_admin(booking, ses_row)
 
     return jsonify(booking), 201
 
@@ -622,6 +689,8 @@ def confirm_booking(bid):
         db.execute("UPDATE bookings SET status='confirmed' WHERE id=?", (bid,))
         db.commit()
         row = db.execute("SELECT * FROM bookings WHERE id=?", (bid,)).fetchone()
+    if row is None:
+        return jsonify({"error": "Rezervácia nenájdená"}), 404
     return jsonify(dict(row))
 
 @app.route("/api/bookings/<int:bid>", methods=["DELETE"])
@@ -705,16 +774,21 @@ def list_contacts():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/contacts", methods=["POST"])
+@rate_limit(5, 3600)
 def create_contact():
-    data = request.json
-    if not data.get("name") or not data.get("email"):
-        return jsonify({"error": "Chýba meno alebo email"}), 400
+    data    = request.get_json(silent=True) or {}
+    name    = clean_text(data.get("name"), 120)
+    email   = clean_text(data.get("email"), 200)
+    phone   = clean_text(data.get("phone"), 40)
+    topic   = clean_text(data.get("topic"), 120)
+    message = clean_text(data.get("message"), 5000)
+    if not name or not email or "@" not in email:
+        return jsonify({"error": "Chýba meno alebo platný email"}), 400
     with get_db() as db:
         cur = db.execute("""
             INSERT INTO contacts (name,email,phone,topic,message)
             VALUES (?,?,?,?,?)
-        """, (data["name"], data["email"], data.get("phone",""),
-              data.get("topic",""), data.get("message","")))
+        """, (name, email, phone, topic, message))
         db.commit()
         contact = dict(db.execute("SELECT * FROM contacts WHERE id=?", (cur.lastrowid,)).fetchone())
 
@@ -756,6 +830,7 @@ def list_reviews_admin():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/reviews", methods=["POST"])
+@rate_limit(5, 3600)
 def create_review():
     data = request.json or {}
     if not data.get("name") or not data.get("text") or not data.get("page"):

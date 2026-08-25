@@ -527,8 +527,19 @@ function fmtDT(d){
   } catch{ return d; }
 }
 function badgeLbl(b){ return {active:'Aktívna',full:'Plná',cancelled:'Zrušená',pending:'Čaká',confirmed:'Potvrdená',new:'Nová',read:'Prečítaná'}[b]||b; }
+// Escapuje text od navstevnikov (mena, spravy, recenzie) pred vlozenim
+// do innerHTML. Bez toho by <img onerror=...> v mene spustil kod v admine.
+function esc(v){
+  if(v===null||v===undefined) return '';
+  return String(v).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+// Escapuje hodnotu vkladanu do JS retazca v onclick="..."
+function escAttr(v){ return esc(v).replace(/\\/g,'\\\\'); }
+
 function thumb(url){
-  if(url) return `<img src="${url}" class="thumb" onerror="this.style.display='none'">`;
+  if(url) return `<img src="${esc(url)}" class="thumb" alt="" onerror="this.style.display='none'">`;
   return `<div class="thumb-placeholder">🖼</div>`;
 }
 function toast(msg, type=''){
@@ -563,19 +574,19 @@ async function loadDashboard(){
     document.getElementById('dashTable').innerHTML = ses.length
       ? ses.map(s=>`<tr>
           <td>${thumb(s.image_url)}</td>
-          <td><strong>${s.title}</strong>${s.project==='park'?' 🌿':''}</td>
-          <td>${fmtDate(s.date)} · ${s.time}</td>
+          <td><strong>${esc(s.title)}</strong>${s.project==='park'?' 🌿':''}</td>
+          <td>${fmtDate(s.date)} · ${esc(s.time)}</td>
           <td>${prog(s.booked,s.spots)}</td>
-          <td><span class="bdg bdg-${s.badge}">${badgeLbl(s.badge)}</span></td>
+          <td><span class="bdg bdg-${esc(s.badge)}">${esc(badgeLbl(s.badge))}</span></td>
         </tr>`).join('')
       : '<tr class="empty-row"><td colspan="5">Žiadne nadchádzajúce sésie</td></tr>';
 
     // Latest bookings
     document.getElementById('dashBookings').innerHTML = bookings.slice(0,5).map(b=>`<tr>
-      <td><strong>${b.name}</strong></td>
-      <td>${b.session_title||'–'} ${b.project==='park'?'🌿':''}</td>
-      <td><a href="mailto:${b.email}" style="color:var(--gold);text-decoration:none">${b.email}</a></td>
-      <td><span class="bdg bdg-${b.status}">${badgeLbl(b.status)}</span></td>
+      <td><strong>${esc(b.name)}</strong></td>
+      <td>${esc(b.session_title||'–')} ${b.project==='park'?'🌿':''}</td>
+      <td><a href="mailto:${encodeURIComponent(b.email||'')}" style="color:var(--gold);text-decoration:none">${esc(b.email)}</a></td>
+      <td><span class="bdg bdg-${esc(b.status)}">${esc(badgeLbl(b.status))}</span></td>
     </tr>`).join('') || '<tr class="empty-row"><td colspan="4">Žiadne rezervácie</td></tr>';
 
   } catch(e){ toast('Chyba načítania dashboardu','error'); }
@@ -590,11 +601,11 @@ async function loadSessions(project){
     const sessions = await API.getSessions(project);
     tbody.innerHTML = sessions.map(s=>`<tr>
       <td>${thumb(s.image_url)}</td>
-      <td><strong>${s.title}</strong><br><small style="color:var(--tl)">${s.location||''}</small></td>
-      <td>${fmtDate(s.date)}<br><small style="color:var(--tl)">${s.time} · ${s.duration}</small></td>
+      <td><strong>${esc(s.title)}</strong><br><small style="color:var(--tl)">${esc(s.location||'')}</small></td>
+      <td>${fmtDate(s.date)}<br><small style="color:var(--tl)">${esc(s.time)} · ${esc(s.duration)}</small></td>
       <td>${prog(s.booked,s.spots)}</td>
-      <td>${s.price}</td>
-      <td><span class="bdg bdg-${s.badge}">${badgeLbl(s.badge)}</span></td>
+      <td>${esc(s.price)}</td>
+      <td><span class="bdg bdg-${esc(s.badge)}">${esc(badgeLbl(s.badge))}</span></td>
       <td>
         <button class="ab ab-outline" onclick="editSession(${s.id},'${project}')">Upraviť</button>
         <button class="ab ${s.badge==='cancelled'?'ab-green':'ab-outline'}" onclick="cancelSessionAPI(${s.id},'${project}')">${s.badge==='cancelled'?'Obnoviť':'Zrušiť'}</button>
@@ -612,13 +623,13 @@ async function loadBookings(){
   try{
     const bookings=await API.getBookings();
     tbody.innerHTML=bookings.map(b=>`<tr>
-      <td><strong>${b.name}</strong></td>
-      <td>${b.session_title||'–'} ${b.project==='park'?'🌿':''}<br><small style="color:var(--tl)">${b.session_date?fmtDate(b.session_date):''} ${b.session_time||''}</small></td>
-      <td><a href="mailto:${b.email}" style="color:var(--gold);text-decoration:none">${b.email}</a></td>
-      <td>${b.phone||'–'}</td>
-      <td class="msg-text" title="${b.note||''}">${b.note||'–'}</td>
+      <td><strong>${esc(b.name)}</strong></td>
+      <td>${esc(b.session_title||'–')} ${b.project==='park'?'🌿':''}<br><small style="color:var(--tl)">${b.session_date?fmtDate(b.session_date):''} ${esc(b.session_time||'')}</small></td>
+      <td><a href="mailto:${encodeURIComponent(b.email||'')}" style="color:var(--gold);text-decoration:none">${esc(b.email)}</a></td>
+      <td>${esc(b.phone||'–')}</td>
+      <td class="msg-text" title="${esc(b.note||'')}">${esc(b.note||'–')}</td>
       <td><small>${fmtDT(b.created_at)}</small></td>
-      <td><span class="bdg bdg-${b.status}">${badgeLbl(b.status)}</span></td>
+      <td><span class="bdg bdg-${esc(b.status)}">${esc(badgeLbl(b.status))}</span></td>
       <td>
         <button class="ab ab-red" onclick="deleteBookingAPI(${b.id})">Zrušiť</button>
       </td>
@@ -638,15 +649,15 @@ async function loadContacts(){
     const contacts=await API.getContacts();
     _contacts=contacts;
     tbody.innerHTML=contacts.map(c=>`<tr style="${c.status==='new'?'background:rgba(255,228,181,0.15)':''}">
-      <td><strong>${c.name}</strong></td>
-      <td><a href="mailto:${c.email}" style="color:var(--gold);text-decoration:none">${c.email}</a></td>
-      <td>${c.phone||'–'}</td>
-      <td>${c.topic||'–'}</td>
-      <td class="msg-text msg-open" onclick="openMsg(${c.id})" title="Kliknutím zobrazíte celú správu">${c.message||'–'}</td>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td><a href="mailto:${encodeURIComponent(c.email||'')}" style="color:var(--gold);text-decoration:none">${esc(c.email)}</a></td>
+      <td>${esc(c.phone||'–')}</td>
+      <td>${esc(c.topic||'–')}</td>
+      <td class="msg-text msg-open" onclick="openMsg(${c.id})" title="Kliknutím zobrazíte celú správu">${esc(c.message||'–')}</td>
       <td><small>${fmtDT(c.created_at)}</small></td>
-      <td><span class="bdg bdg-${c.status}">${badgeLbl(c.status)}</span></td>
+      <td><span class="bdg bdg-${esc(c.status)}">${esc(badgeLbl(c.status))}</span></td>
       <td>
-        <a href="mailto:${c.email}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>
+        <a href="mailto:${encodeURIComponent(c.email||'')}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>
         ${c.status==='new'?`<button class="ab ab-outline" onclick="markReadAPI(${c.id})">Prečítané</button>`:''}
         <button class="ab ab-red" onclick="deleteContactAPI(${c.id})">Zmazať</button>
       </td>
@@ -663,11 +674,11 @@ function openMsg(id){
   const meta=document.getElementById('msgModalMeta');
   meta.innerHTML='';
   const rows=[
-    ['Email', c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '–'],
-    ['Telefón', c.phone ? `<a href="tel:${c.phone.replace(/\s/g,'')}">${c.phone}</a>` : '–'],
-    ['Téma', c.topic||'–'],
+    ['Email', c.email ? `<a href="mailto:${encodeURIComponent(c.email)}">${esc(c.email)}</a>` : '–'],
+    ['Telefón', c.phone ? `<a href="tel:${encodeURIComponent(c.phone.replace(/\s/g,''))}">${esc(c.phone)}</a>` : '–'],
+    ['Téma', esc(c.topic||'–')],
     ['Dátum', fmtDT(c.created_at)],
-    ['Stav', `<span class="bdg bdg-${c.status}">${badgeLbl(c.status)}</span>`]
+    ['Stav', `<span class="bdg bdg-${esc(c.status)}">${esc(badgeLbl(c.status))}</span>`]
   ];
   for(const [k,v] of rows){
     const dt=document.createElement('dt'); dt.textContent=k;
@@ -679,7 +690,7 @@ function openMsg(id){
   document.getElementById('msgModalBody').textContent=c.message||'(prázdna správa)';
 
   const act=document.getElementById('msgModalActions');
-  act.innerHTML=`<a href="mailto:${c.email}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>`
+  act.innerHTML=`<a href="mailto:${encodeURIComponent(c.email||'')}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>`
     +(c.status==='new'?`<button class="ab ab-outline" onclick="markReadAPI(${c.id});closeMsgModal()">Označiť ako prečítané</button>`:'');
 
   document.getElementById('msgModal').classList.add('open');
@@ -701,13 +712,13 @@ async function loadClients(){
     const clients=await API.getClients();
     if(!clients.length){ tbody.innerHTML='<tr class="empty-row"><td colspan="6">Zatiaľ žiadni klienti</td></tr>'; return; }
     tbody.innerHTML=clients.map(c=>`<tr>
-      <td><strong>${c.name}</strong></td>
-      <td><a href="mailto:${c.email}" style="color:var(--gold);text-decoration:none">${c.email}</a></td>
-      <td>${c.phone||'–'}</td>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td><a href="mailto:${encodeURIComponent(c.email||'')}" style="color:var(--gold);text-decoration:none">${esc(c.email)}</a></td>
+      <td>${esc(c.phone||'–')}</td>
       <td style="text-align:center"><span class="bdg bdg-active">${c.total_bookings}</span></td>
       <td style="text-align:center">${c.terms_accepted?'<span style="color:#5a8a5a;font-size:1.1rem">✓</span>':'<span style="color:#ccc">–</span>'}</td>
       <td><small>${fmtDT(c.last_booking)}</small></td>
-      <td><button class="ab ab-gold" onclick="openEmailOne('${c.email}','${c.name.replace(/'/g,"\\'")}')">✉️ Napísať</button></td>
+      <td><button class="ab ab-gold" onclick="openEmailOne('${escAttr(c.email)}','${escAttr(c.name)}')">✉️ Napísať</button></td>
     </tr>`).join('');
   } catch(e){ toast('Chyba načítania klientov','error'); }
 }
@@ -938,10 +949,10 @@ async function loadReviews(){
       const pageLbl={dula:'Doula',park:'Joga v parku'}[r.page]||r.page;
       return `<tr>
         <td><span class="bdg bdg-active">${pageLbl}</span></td>
-        <td><strong>${r.name||'–'}</strong></td>
-        <td><a href="mailto:${r.email||''}" style="color:var(--gold);text-decoration:none">${r.email||'–'}</a></td>
+        <td><strong>${esc(r.name||'–')}</strong></td>
+        <td><a href="mailto:${encodeURIComponent(r.email||'')}" style="color:var(--gold);text-decoration:none">${esc(r.email||'–')}</a></td>
         <td style="color:#c8a84b;letter-spacing:-1px">${starsHtml(r.stars)}</td>
-        <td class="msg-text" title="${(r.text||'').replace(/"/g,'&quot;')}">${r.text||'–'}</td>
+        <td class="msg-text" title="${esc(r.text||'')}">${esc(r.text||'–')}</td>
         <td><small>${fmtDT(r.created_at)}</small></td>
         <td>
           ${isPending?`<button class="ab ab-green" onclick="approveReviewAPI(${r.id})">✓ Schváliť</button>`:''}

@@ -305,7 +305,7 @@
     <a href="index.html#kontakt">Kontakt</a>
     <a href="privacy.html">Ochrana údajov</a>
   </div>
-  <p>© 2025 MagicSpace · Martin</p>
+  <p>© <span class="js-year">2026</span> MagicSpace · Martin</p>
 </footer>
 
 <!-- BOOKING MODAL -->
@@ -325,6 +325,15 @@
   </div>
 </div>
 
+<script>
+// Escapuje text z API (recenzie, nazvy sesii) pred vlozenim do innerHTML.
+function esc(v){
+  if(v===null||v===undefined) return '';
+  return String(v).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+</script>
 <script src="/api.js"></script>
 <script>
 async function renderSessions() {
@@ -342,10 +351,10 @@ async function renderSessions() {
       const left = s.spots - s.booked;
       return `<div class="session-card">
         <span class="session-badge ${isFull?'full':''} ${isCan?'cancelled':''}">${isCan?'Zrušené':isFull?'Plná kapacita':left+' voľných miest'}</span>
-        <h3>${s.title}</h3>
-        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${s.time}</span></div>
-        <div class="session-meta"><span>⏱ ${s.duration}</span><span>💰 ${s.price}</span></div>
-        <p class="session-desc">${s.desc}</p>
+        <h3>${esc(s.title)}</h3>
+        <div class="session-meta"><span>📅 ${df}</span><span>🕐 ${esc(s.time)}</span></div>
+        <div class="session-meta"><span>⏱ ${esc(s.duration)}</span><span>💰 ${esc(s.price)}</span></div>
+        <p class="session-desc">${esc(s.desc)}</p>
         <button class="btn-book" ${isFull||isCan?'disabled':''} onclick="openBooking(${s.id})">${isCan?'Zrušené':isFull?'Plná kapacita':'Rezervovať miesto'}</button>
       </div>`;
     }).join('');
@@ -389,6 +398,12 @@ renderSessions();
   function acceptCookies(){localStorage.setItem('cookie_consent','accepted');hideCookiePopup();}
   function declineCookies(){sessionStorage.setItem('cookie_dismissed','1');hideCookiePopup();}
   if(!localStorage.getItem('cookie_consent')&&!sessionStorage.getItem('cookie_dismissed'))showCookiePopup();
+</script>
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
 </script>
 </body>
 </html>
