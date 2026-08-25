@@ -102,8 +102,41 @@ def clean_subject(value, maxlen=180):
     return txt.replace("\r", " ").replace("\n", " ").strip()[:maxlen]
 
 # ─── LIMIT POČTU POŽIADAVIEK NA IP ───────────────────────
-_rate_hits = {}
+# Počítadlo je v databáze, nie v pamäti procesu: gunicorn beží vo viacerých
+# workeroch a každý by mal inak vlastný počet, takže skutočný limit by bol
+# toľkonásobne vyšší, koľko je workerov.
 _rate_lock = threading.Lock()
+
+def _rate_init():
+    try:
+        with get_db() as db:
+            db.execute("CREATE TABLE IF NOT EXISTS rate_hits (k TEXT, ts REAL)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_rate_hits ON rate_hits(k, ts)")
+            db.commit()
+    except sqlite3.Error as e:
+        print("rate_limit: tabuľku sa nepodarilo pripraviť: %s" % e)
+
+def _rate_allow(key, max_calls, per_seconds):
+    """True = požiadavka prejde. Pri chybe DB radšej pustíme, než by sme
+    zablokovali rezervácie."""
+    now = datetime.now().timestamp()
+    try:
+        with _rate_lock, get_db() as db:
+            n = db.execute(
+                "SELECT COUNT(*) FROM rate_hits WHERE k=? AND ts>?",
+                (key, now - per_seconds)
+            ).fetchone()[0]
+            if n >= max_calls:
+                return False
+            db.execute("INSERT INTO rate_hits (k, ts) VALUES (?,?)", (key, now))
+            # občasné upratovanie starých záznamov
+            if int(now) % 20 == 0:
+                db.execute("DELETE FROM rate_hits WHERE ts < ?", (now - 86400,))
+            db.commit()
+        return True
+    except sqlite3.Error as e:
+        print("rate_limit: %s" % e)
+        return True
 
 def rate_limit(max_calls, per_seconds):
     """Bráni spamu cez verejné formuláre a hádaniu admin hesla."""
@@ -112,23 +145,11 @@ def rate_limit(max_calls, per_seconds):
         def wrapper(*a, **kw):
             fwd = request.headers.get("X-Forwarded-For", "")
             ip  = fwd.split(",")[0].strip() or request.remote_addr or "?"
-            key = (fn.__name__, ip)
-            now = datetime.now().timestamp()
-            with _rate_lock:
-                hits = [t for t in _rate_hits.get(key, []) if now - t < per_seconds]
-                if len(hits) >= max_calls:
-                    return jsonify({"error": "Príliš veľa pokusov. Skúste to o chvíľu."}), 429
-                hits.append(now)
-                _rate_hits[key] = hits
-                if len(_rate_hits) > 5000:          # jednoduché čistenie pamäte
-                    stale = [k for k, v in _rate_hits.items()
-                             if not any(now - t < per_seconds for t in v)]
-                    for k in stale:
-                        _rate_hits.pop(k, None)
+            if not _rate_allow("%s|%s" % (fn.__name__, ip), max_calls, per_seconds):
+                return jsonify({"error": "Príliš veľa pokusov. Skúste to o chvíľu."}), 429
             return fn(*a, **kw)
         return wrapper
     return deco
-
 
 def require_admin(fn):
     """Bez prihlásenia vráti 401 – chráni osobné údaje klientok."""
@@ -1333,6 +1354,7 @@ def stats():
 
 # Inicializácia DB pri štarte (funguje aj s Gunicorn/WSGI)
 init_db()
+_rate_init()      # tabuľka pre zdieľaný limit požiadaviek
 
 # ─── SPUSTENIE ───────────────────────────────────────────────
 if __name__ == "__main__":
