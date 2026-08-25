@@ -136,6 +136,13 @@
 
     /* ── MESSAGE PREVIEW ── */
     .msg-text{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tl);font-size:0.82rem;}
+    .msg-open{cursor:pointer;text-decoration:underline;text-decoration-color:rgba(184,154,122,0.5);text-underline-offset:3px;}
+    .msg-open:hover{color:var(--gold);}
+    .msg-body{white-space:pre-wrap;word-break:break-word;line-height:1.8;font-size:0.93rem;color:var(--text);background:var(--rose);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.4rem;max-height:44vh;overflow-y:auto;}
+    .msg-meta{display:grid;grid-template-columns:auto 1fr;gap:0.5rem 1.1rem;font-size:0.86rem;margin-bottom:1.3rem;}
+    .msg-meta dt{color:var(--tl);white-space:nowrap;}
+    .msg-meta dd{margin:0;word-break:break-word;}
+    .msg-meta a{color:var(--gold);text-decoration:none;}
 
     @media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.settings-grid{grid-template-columns:1fr;}}
     @media(max-width:800px){
@@ -414,6 +421,16 @@
     </div>
   </div>
 </div>
+<!-- ── MESSAGE MODAL ── -->
+<div class="modal-overlay" id="msgModal">
+  <div class="modal" style="max-width:600px">
+    <button class="modal-close" onclick="closeMsgModal()">×</button>
+    <h2 id="msgModalTitle">Správa</h2>
+    <dl class="msg-meta" id="msgModalMeta"></dl>
+    <div class="msg-body" id="msgModalBody"></div>
+    <div style="display:flex;gap:0.7rem;flex-wrap:wrap" id="msgModalActions"></div>
+  </div>
+</div>
 
 <!-- ── EMAIL MODAL ── -->
 <div class="modal-overlay" id="emailModal">
@@ -591,17 +608,20 @@ async function confirmBookingAPI(id){ await API.confirmBooking(id); toast('Rezer
 async function deleteBookingAPI(id){ if(!confirm('Zrušiť a vymazať túto rezerváciu?')) return; await API.deleteBooking(id); toast('Rezervácia zmazaná'); loadBookings(); loadDashboard(); }
 
 // ── CONTACTS ──────────────────────────────────────────────────
+let _contacts=[];
+
 async function loadContacts(){
   const tbody=document.getElementById('contactsTable');
   tbody.innerHTML='<tr class="empty-row"><td colspan="8">Načítavam…</td></tr>';
   try{
     const contacts=await API.getContacts();
+    _contacts=contacts;
     tbody.innerHTML=contacts.map(c=>`<tr style="${c.status==='new'?'background:rgba(255,228,181,0.15)':''}">
       <td><strong>${c.name}</strong></td>
       <td><a href="mailto:${c.email}" style="color:var(--gold);text-decoration:none">${c.email}</a></td>
       <td>${c.phone||'–'}</td>
       <td>${c.topic||'–'}</td>
-      <td class="msg-text" title="${c.message||''}">${c.message||'–'}</td>
+      <td class="msg-text msg-open" onclick="openMsg(${c.id})" title="Kliknutím zobrazíte celú správu">${c.message||'–'}</td>
       <td><small>${fmtDT(c.created_at)}</small></td>
       <td><span class="bdg bdg-${c.status}">${badgeLbl(c.status)}</span></td>
       <td>
@@ -613,6 +633,44 @@ async function loadContacts(){
   } catch(e){ toast('Chyba načítania správ','error'); }
 }
 async function markReadAPI(id){ await API.markContactRead(id); loadContacts(); loadDashboard(); }
+
+function openMsg(id){
+  const c=_contacts.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('msgModalTitle').textContent=c.name||'Správa';
+
+  const meta=document.getElementById('msgModalMeta');
+  meta.innerHTML='';
+  const rows=[
+    ['Email', c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '–'],
+    ['Telefón', c.phone ? `<a href="tel:${c.phone.replace(/\s/g,'')}">${c.phone}</a>` : '–'],
+    ['Téma', c.topic||'–'],
+    ['Dátum', fmtDT(c.created_at)],
+    ['Stav', `<span class="bdg bdg-${c.status}">${badgeLbl(c.status)}</span>`]
+  ];
+  for(const [k,v] of rows){
+    const dt=document.createElement('dt'); dt.textContent=k;
+    const dd=document.createElement('dd'); dd.innerHTML=v;
+    meta.appendChild(dt); meta.appendChild(dd);
+  }
+
+  // textContent – správa je vstup od používateľa, nikdy ju nevkladáme ako HTML
+  document.getElementById('msgModalBody').textContent=c.message||'(prázdna správa)';
+
+  const act=document.getElementById('msgModalActions');
+  act.innerHTML=`<a href="mailto:${c.email}?subject=Re: ${encodeURIComponent(c.topic||'MagicSpace')}" class="ab ab-gold" style="text-decoration:none">Odpovedať</a>`
+    +(c.status==='new'?`<button class="ab ab-outline" onclick="markReadAPI(${c.id});closeMsgModal()">Označiť ako prečítané</button>`:'');
+
+  document.getElementById('msgModal').classList.add('open');
+}
+function closeMsgModal(){ document.getElementById('msgModal').classList.remove('open'); }
+
+document.getElementById('msgModal').addEventListener('click',e=>{
+  if(e.target.id==='msgModal') closeMsgModal();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeMsgModal();
+});
 
 // ── CLIENTS ───────────────────────────────────────────────────
 async function loadClients(){
