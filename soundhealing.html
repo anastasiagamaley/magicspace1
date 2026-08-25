@@ -95,6 +95,16 @@
     .btn-outline { background:transparent;color:var(--gold);border:1px solid var(--gold);padding:0.85rem 2rem;border-radius:50px;text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.25s;display:inline-block; }
     .btn-outline:hover { background:var(--gold);color:var(--white); }
 
+
+    /* OZNAM / ANNOUNCEMENT */
+    .notice { background:linear-gradient(135deg,var(--rose) 0%,var(--blush) 100%);border-top:1px solid rgba(184,154,122,0.25);border-bottom:1px solid rgba(184,154,122,0.25);padding:4rem 5vw;text-align:center; }
+    .notice-inner { max-width:840px;margin:0 auto; }
+    .notice-tag { display:inline-flex;align-items:center;gap:0.6rem;background:var(--gold);color:var(--white);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.45rem 1.2rem;border-radius:50px;margin-bottom:1.6rem; }
+    .notice h2 { font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,4.2vw,3.1rem);font-weight:300;line-height:1.25;margin-bottom:1.3rem; }
+    .notice h2 em { font-style:italic;color:var(--gold); }
+    .notice p { font-size:clamp(1rem,1.5vw,1.15rem);line-height:1.9;color:var(--text-light);max-width:660px;margin:0 auto 1rem; }
+    .notice p.notice-warm { font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.1rem,1.8vw,1.35rem);color:var(--gold); }
+    @media(max-width:768px){ .notice { padding:3rem 1.5rem; } }
     /* SESSIONS on page */
     .sessions-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.4rem;margin-top:2rem; }
     .session-card { background:var(--white);border-radius:16px;padding:1.7rem;border:1px solid rgba(184,154,122,0.15);transition:transform 0.3s,box-shadow 0.3s; }
@@ -195,6 +205,16 @@
   <div class="page-hero-right">
     <img src="/uploads/sound.JPG" alt="Sound Healing">
     <div class="hero-overlay"></div>
+  </div>
+</section>
+
+<!-- OZNAM -->
+<section class="notice" id="oznam">
+  <div class="notice-inner">
+    <div class="notice-tag">✦ Dôležitý oznam</div>
+    <h2>Ospravedlňujem sa za nepríjemnosti –<br><em>Sound Healing</em> a <em>joga pre tehotné</em><br>sa vracajú v októbri</h2>
+    <p>Sésie musím dočasne odložiť z dôvodov, ktoré nie sú v mojej moci. Podrobnosti a nové termíny zverejním čoskoro.</p>
+    <p class="notice-warm">Chýbate mi a s netrpezlivosťou sa teším na október. Prajem vám krásny deň!</p>
   </div>
 </section>
 
