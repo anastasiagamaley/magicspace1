@@ -140,8 +140,14 @@
 </div>
 
 <footer>
-  <p>© 2025 MagicSpace · info@magicspace.sk</p>
+  <p>© <span class="js-year">2026</span> MagicSpace · info@magicspace.sk</p>
 </footer>
 
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
+</script>
 </body>
 </html>

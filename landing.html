@@ -409,7 +409,7 @@
   <a href="/index.html">magicspace.sk</a>
   <a href="/privacy.html">Ochrana údajov</a>
   <a href="mailto:info@magicspace.sk">info@magicspace.sk</a>
-  <p class="disclaimer">Obsah má informatívny charakter a nenahrádza odborné medicínske poradenstvo. Vždy sa poraďte so svojím lekárom alebo pôrodnou asistentkou. · © 2025 MagicSpace</p>
+  <p class="disclaimer">Obsah má informatívny charakter a nenahrádza odborné medicínske poradenstvo. Vždy sa poraďte so svojím lekárom alebo pôrodnou asistentkou. · © <span class="js-year">2026</span> MagicSpace</p>
 </footer>
 
 <script>
@@ -449,5 +449,11 @@ async function submitSubscribe() {
 document.getElementById('subEmail').addEventListener('keydown', e => { if (e.key === 'Enter') submitSubscribe(); });
 </script>
 
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
+</script>
 </body>
 </html>

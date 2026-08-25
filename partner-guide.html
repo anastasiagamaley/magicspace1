@@ -239,8 +239,14 @@
   <a href="/kurz.html">Kurz pre páry</a>
   <a href="/refund-policy.html">Vrátenie peňazí</a>
   <a href="mailto:info@magicspace.sk">info@magicspace.sk</a>
-  <p class="disclaimer">© 2025 MagicSpace · info@magicspace.sk</p>
+  <p class="disclaimer">© <span class="js-year">2026</span> MagicSpace · info@magicspace.sk</p>
 </footer>
 
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
+</script>
 </body>
 </html>

@@ -97,8 +97,14 @@
     <a href="https://www.magicspace.sk/jogamartin">Joga v parku</a>
     <a href="privacy.html">Ochrana údajov</a>
   </div>
-  <p>© 2025 MagicSpace · Martin</p>
+  <p>© <span class="js-year">2026</span> MagicSpace · Martin</p>
 </footer>
 
+<script>
+// Rok v paticke drzime aktualny, nech nezastara.
+document.querySelectorAll('.js-year').forEach(el => {
+  el.textContent = new Date().getFullYear();
+});
+</script>
 </body>
 </html>
