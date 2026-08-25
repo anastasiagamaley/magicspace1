@@ -4,8 +4,9 @@ Spustite:  python app.py
 Otvorte:   http://localhost:5000
 """
 
-from flask import Flask, jsonify, request, send_from_directory, abort, redirect
+from flask import Flask, jsonify, request, send_from_directory, abort, redirect, session
 import sqlite3, os, json, smtplib, threading, base64, secrets
+from functools import wraps
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -35,6 +36,46 @@ MAIL_PORT      = int(os.getenv("MAIL_PORT",  "465"))
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 SITE_URL       = os.getenv("SITE_URL",       "http://localhost:5000")
 # ════════════════════════════════════════════════════════════════
+
+# ─── PODPISOVACÍ KĽÚČ PRE SESSION COOKIE ─────────────────────
+# Z .env; ak tam nie je, vygeneruje sa raz a uloží do .secret_key,
+# aby reštart servera neodhlásil admina.
+def _load_secret_key():
+    key = os.getenv("SECRET_KEY", "")
+    if key:
+        return key
+    path = os.path.join(BASE, ".secret_key")
+    if os.path.exists(path):
+        with open(path) as f:
+            saved = f.read().strip()
+        if saved:
+            return saved
+    key = secrets.token_hex(32)
+    with open(path, "w") as f:
+        f.write(key)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass          # Windows – chmod nemá efekt
+    return key
+
+app.secret_key = _load_secret_key()
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=SITE_URL.startswith("https"),
+    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+)
+
+# ─── OCHRANA ADMIN ENDPOINTOV ────────────────────────────────
+def require_admin(fn):
+    """Bez prihlásenia vráti 401 – chráni osobné údaje klientok."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin"):
+            return jsonify({"error": "Vyžaduje sa prihlásenie"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
 
 # ─── DATABÁZA ────────────────────────────────────────────────
 def get_db():
@@ -399,12 +440,27 @@ def robots():
 @app.route("/api/auth", methods=["POST"])
 def auth():
     data = request.json or {}
-    if data.get("password") == ADMIN_PASSWORD:
+    given = data.get("password") or ""
+    # compare_digest – konštantný čas, nedá sa hádať heslo podľa rýchlosti odpovede
+    if secrets.compare_digest(str(given), str(ADMIN_PASSWORD)):
+        session.permanent = True
+        session["admin"]  = True
         return jsonify({"ok": True})
     return jsonify({"error": "Nesprávne heslo"}), 401
 
+@app.route("/api/auth/check")
+def auth_check():
+    """Frontend zistí, či ešte platí prihlásenie z cookie."""
+    return jsonify({"ok": bool(session.get("admin"))})
+
+@app.route("/api/auth/logout", methods=["POST"])
+def auth_logout():
+    session.clear()
+    return jsonify({"ok": True})
+
 # ─── API: UPLOAD OBRÁZKA ──────────────────────────────────────
 @app.route("/api/upload", methods=["POST"])
+@require_admin
 def upload_image():
     if "file" not in request.files:
         return jsonify({"error": "Žiadny súbor"}), 400
@@ -440,6 +496,7 @@ def list_sessions():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/sessions", methods=["POST"])
+@require_admin
 def create_session():
     data = request.json
     if not all(data.get(k) for k in ["title", "date", "time"]):
@@ -503,6 +560,7 @@ def create_session():
     return jsonify(dict(row)), 201
 
 @app.route("/api/sessions/<int:sid>", methods=["PUT"])
+@require_admin
 def update_session(sid):
     data  = request.json
     fields = ["title","date","time","duration","spots","price","desc","location","badge","image_url"]
@@ -517,6 +575,7 @@ def update_session(sid):
     return jsonify(dict(row))
 
 @app.route("/api/sessions/<int:sid>", methods=["DELETE"])
+@require_admin
 def delete_session(sid):
     with get_db() as db:
         db.execute("DELETE FROM sessions WHERE id=?", (sid,))
@@ -524,6 +583,7 @@ def delete_session(sid):
     return jsonify({"ok": True})
 
 @app.route("/api/sessions/<int:sid>/recur-group", methods=["DELETE"])
+@require_admin
 def delete_recur_group(sid):
     """Zmaže celú sériu opakujúcich sa sésií."""
     with get_db() as db:
@@ -536,6 +596,7 @@ def delete_recur_group(sid):
     return jsonify({"ok": True})
 
 @app.route("/api/sessions/<int:sid>/cancel", methods=["POST"])
+@require_admin
 def cancel_session(sid):
     with get_db() as db:
         row = db.execute("SELECT * FROM sessions WHERE id=?", (sid,)).fetchone()
@@ -559,6 +620,7 @@ def cancel_session(sid):
 
 # ─── API: REZERVÁCIE ──────────────────────────────────────────
 @app.route("/api/bookings")
+@require_admin
 def list_bookings():
     with get_db() as db:
         rows = db.execute("""
@@ -610,6 +672,7 @@ def create_booking():
     return jsonify(booking), 201
 
 @app.route("/api/bookings/<int:bid>/confirm", methods=["POST"])
+@require_admin
 def confirm_booking(bid):
     with get_db() as db:
         db.execute("UPDATE bookings SET status='confirmed' WHERE id=?", (bid,))
@@ -618,6 +681,7 @@ def confirm_booking(bid):
     return jsonify(dict(row))
 
 @app.route("/api/bookings/<int:bid>", methods=["DELETE"])
+@require_admin
 def delete_booking(bid):
     with get_db() as db:
         b = db.execute("SELECT session_id FROM bookings WHERE id=?", (bid,)).fetchone()
@@ -697,6 +761,7 @@ def cancel_by_link():
 
 # ─── API: KLIENTI ────────────────────────────────────────────
 @app.route("/api/clients")
+@require_admin
 def list_clients():
     """Unikátni klienti zo všetkých rezervácií."""
     with get_db() as db:
@@ -713,6 +778,7 @@ def list_clients():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/clients/send-email", methods=["POST"])
+@require_admin
 def send_client_email():
     """Pošle email jednému klientovi alebo všetkým."""
     data    = request.json or {}
@@ -756,6 +822,7 @@ def send_client_email():
 
 # ─── API: KONTAKTY ────────────────────────────────────────────
 @app.route("/api/contacts")
+@require_admin
 def list_contacts():
     with get_db() as db:
         rows = db.execute("SELECT * FROM contacts ORDER BY created_at DESC").fetchall()
@@ -779,6 +846,7 @@ def create_contact():
     return jsonify(contact), 201
 
 @app.route("/api/contacts/<int:cid>", methods=["DELETE"])
+@require_admin
 def delete_contact(cid):
     with get_db() as db:
         db.execute("DELETE FROM contacts WHERE id=?", (cid,))
@@ -786,6 +854,7 @@ def delete_contact(cid):
     return jsonify({"ok": True})
 
 @app.route("/api/contacts/<int:cid>/read", methods=["POST"])
+@require_admin
 def mark_contact_read(cid):
     with get_db() as db:
         db.execute("UPDATE contacts SET status='read' WHERE id=?", (cid,))
@@ -1122,6 +1191,7 @@ a{display:inline-block;color:#b89a7a;font-size:0.8rem;text-decoration:none;borde
 </div></body></html>""", 200
 
 @app.route("/api/reviews/admin")
+@require_admin
 def list_reviews_admin():
     with get_db() as db:
         rows = db.execute("SELECT * FROM reviews ORDER BY created_at DESC").fetchall()
@@ -1142,6 +1212,7 @@ def create_review():
     return jsonify({"ok": True}), 201
 
 @app.route("/api/reviews/<int:rid>/approve", methods=["POST"])
+@require_admin
 def approve_review(rid):
     with get_db() as db:
         db.execute("UPDATE reviews SET status='approved' WHERE id=?", (rid,))
@@ -1149,6 +1220,7 @@ def approve_review(rid):
     return jsonify({"ok": True})
 
 @app.route("/api/reviews/<int:rid>", methods=["DELETE"])
+@require_admin
 def delete_review(rid):
     with get_db() as db:
         db.execute("DELETE FROM reviews WHERE id=?", (rid,))
@@ -1157,6 +1229,7 @@ def delete_review(rid):
 
 # ─── STATS ───────────────────────────────────────────────────
 @app.route("/api/stats")
+@require_admin
 def stats():
     with get_db() as db:
         active    = db.execute("SELECT COUNT(*) FROM sessions WHERE badge='active'").fetchone()[0]

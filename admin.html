@@ -465,11 +465,32 @@ async function login(){
     setTimeout(()=>{ document.getElementById('pwInput').style.borderColor=''; document.getElementById('loginErr').style.display='none'; }, 2000);
   }
 }
-function logout(){
+function showLogin(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('adminApp').style.display='none';
   document.getElementById('pwInput').value='';
 }
+async function logout(){
+  await API.logoutServer();
+  showLogin();
+}
+
+// Server vráti 401, keď session vypršala – vrátime sa na prihlásenie.
+API.onUnauthorized = function(){
+  if(document.getElementById('adminApp').style.display !== 'none'){
+    showLogin();
+    toast('Prihlásenie vypršalo, prihláste sa znova','error');
+  }
+};
+
+// Po obnovení stránky obnovíme prihlásenie z cookie.
+(async function restoreSession(){
+  if(await API.checkSession()){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminApp').style.display='flex';
+    loadDashboard();
+  }
+})();
 
 // ── PANELS ───────────────────────────────────────────────────
 function showPanel(name){

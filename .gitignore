@@ -29,3 +29,6 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Podpisovací kľúč pre session cookie – NIKDY do GitHubu!
+.secret_key
