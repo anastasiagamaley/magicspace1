@@ -22,7 +22,7 @@ os.makedirs(UPLOADS, exist_ok=True)
 # Načítať .env súbor
 load_dotenv(os.path.join(BASE, ".env"))
 
-app = Flask(__name__, static_folder=BASE, static_url_path="")
+app = Flask(__name__, static_folder=None)
 
 # ════════════════════════════════════════════════════════════════
 # NASTAVENIA – upravujte v súbore .env, nie tu!
@@ -438,16 +438,35 @@ scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
 # ─── STATICKÉ STRÁNKY ─────────────────────────────────────────
+PAGE_NAME_RE = _re.compile(r"^[a-zA-Z0-9_-]+$")
+
+# Explicitný whitelist súborov v koreňovom adresári – NIE celý BASE ako static!
+PUBLIC_ROOT_FILES = {
+    "api.js":                      "application/javascript",
+    "favicon.png":                 "image/png",
+    "magicspace_leadmagnet.pdf":   "application/pdf",
+    "byt_tam_paid_guide.pdf":      "application/pdf",
+}
+
 @app.route("/")
 def index():
     return send_from_directory(BASE, "index.html")
 
 @app.route("/<page>.html")
 def static_page(page):
+    if not PAGE_NAME_RE.match(page):
+        abort(404)
     path = os.path.join(BASE, f"{page}.html")
     if os.path.exists(path):
         return send_from_directory(BASE, f"{page}.html")
     abort(404)
+
+@app.route("/<filename>")
+def public_root_file(filename):
+    mimetype = PUBLIC_ROOT_FILES.get(filename)
+    if not mimetype or not os.path.exists(os.path.join(BASE, filename)):
+        abort(404)
+    return send_from_directory(BASE, filename, mimetype=mimetype)
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
